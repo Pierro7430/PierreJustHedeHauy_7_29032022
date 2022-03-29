@@ -1,0 +1,8 @@
+// Small tablets (portrait view)
+$medium-device: 768px;
+// Medium devices
+@mixin medium-device {
+  @media (min-width: #{$medium-device}) {
+    @content;
+  }
+}
