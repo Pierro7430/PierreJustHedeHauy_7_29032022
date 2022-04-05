@@ -3,7 +3,7 @@
 
     <div class="card-login_aside">
       <div class="card-login_aside_logo">
-        <img class="logo" src="../images/icon-above-font-red.svg" alt="Logo Groupomania">
+        <img class="logo-login" src="../images/logo/icon-above-font-red.svg" alt="Logo Groupomania">
       </div>
       <div class="card-login_aside_txt" >
         <p v-if="mode == 'login'">Bon retour parmi nous</p>
@@ -151,7 +151,7 @@ export default {
     },
 
 		checkFormLastname: function () {
-      const regexLastname = /^[a-zA-Z\-]+$/;
+      const regexLastname = /^[a-zA-ZáàâäãåçéèêëíìîïñóòôöõúùûüýÿæœÁÀÂÄÃÅÇÉÈÊËÍÌÎÏÑÓÒÔÖÕÚÙÛÜÝŸÆŒ\-]+$/;
       const checkLastname = regexLastname.test(this.lastname);
       if(!this.lastname) {
 				this.errorLastname = false;
@@ -173,7 +173,7 @@ export default {
     },
 
 		checkFormFirstname: function () {
-      const regexFirstname = /^[a-zA-Z\-]+$/;
+      const regexFirstname = /^[a-zA-ZáàâäãåçéèêëíìîïñóòôöõúùûüýÿæœÁÀÂÄÃÅÇÉÈÊËÍÌÎÏÑÓÒÔÖÕÚÙÛÜÝŸÆŒ\-]+$/;
       const checkFirstname = regexFirstname.test(this.firstname);
       if(!this.firstname) {
 				this.errorFirstname = false;
@@ -306,7 +306,7 @@ export default {
         display: flex;
         justify-content: center;
 
-        .logo {
+        .logo-login {
           width: 100%;
           max-width: 250px;
         }
@@ -323,7 +323,7 @@ export default {
       position: absolute;
       top: calc($height-card-aside - $dimension-recovery-card);
       width: 100%;
-      background-color: #ffffff;
+      background-color: $color-white;
       padding: 40px;
       border-top-left-radius: $dimension-recovery-card;
       border-top-right-radius: $dimension-recovery-card;

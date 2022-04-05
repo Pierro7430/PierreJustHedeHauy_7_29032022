@@ -1,0 +1,16 @@
+Mettre à jour Profil
+
+INSERT INTO bdd_p7.info_user
+(info_user_userId, info_user_birthDate, info_user_city, info_user_photo)
+VALUES(101, '1991-09-16', 'Vannes', 'picture');
+
+
+
+
+
+Selectionner Profil
+
+SELECT lastname, firstname, signup_date, info_user_birthDate, info_user_city, info_user_photo
+FROM bdd_p7.`user`, bdd_p7.info_user
+WHERE id = 11
+  AND info_user_userId = 11

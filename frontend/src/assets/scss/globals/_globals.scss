@@ -1,4 +1,7 @@
+
 @import './variables/variables';
+
+
 
 @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;800&display=swap');
 
@@ -14,4 +17,21 @@ body {
         background-color: $color-grey-light;
         color: $color-black;
         font-size: $font-normal;
+        height: 100vh;
+        padding: 0;
+}
+
+ul, li {
+        list-style: none;
+        padding: 0;
+        margin: 0;
+        text-decoration: none;
+
+}
+
+a, a:visited, a:hover, a:active {
+        padding: 0;
+        margin: 0;
+        text-decoration: none;
+        color: $color-black;
 }

@@ -1,19 +1,19 @@
 <template>
-    <div class="profile-page">
+    <div class="profile-edit-page">
         <navbar></navbar>
-        <card-profile></card-profile>
+        <card-profile-edit></card-profile-edit>
         <card-footer></card-footer>   
     </div>
 </template>
 
 <script>
-import CardProfile from '../components/Card-profile.vue';
+import CardProfileEdit from '../components/Card-profile-edit.vue';
 import Navbar from '../components/Navbar.vue';
 import CardFooter from '../components/Card-footer.vue'
 
 export default {
   name: 'Profile',
-  components: { Navbar, CardProfile, CardFooter }, 
+  components: { Navbar, CardProfileEdit, CardFooter }, 
 }
 
 </script>
@@ -21,7 +21,7 @@ export default {
 <style lang="scss">
 @import '../assets/scss/scss'; 
 
-.profil-page {
+.profile-edit-page {
     display: flex;
     flex-direction: column;
     justify-content: flex-start;

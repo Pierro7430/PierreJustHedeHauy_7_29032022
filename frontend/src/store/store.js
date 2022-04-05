@@ -6,8 +6,7 @@ const instance = axios.create({
     baseURL: 'http://127.0.0.1:3000/api/auth/'
   });
 
-
-
+  
 let user = localStorage.getItem('user');
     if (!user) {
     user = {
@@ -99,18 +98,21 @@ const store = createStore({
             });
         },
 
-        getUserInfos: ({commit}) => {
+        // getUserInfos: ({commit}) => {
             
-            let user = localStorage.getItem('user');
-            user = JSON.parse(user)
-            instance.get('/profile/:' + user.userId) 
-            .then(function (response) {
-                commit('userInfos', response.data.results[0]);
-            })
+        //     let user = localStorage.getItem('user');
+        //     user = JSON.parse(user);
+        //     const token = user.token;
+        //     console.log(token);
+        //     instance.get('/profile/:' + user.userId, { headers: {"Authorization" : `Bearer ${token}`} })
+        //     .then(function (response) {
+        //         console.log(response.data.results[0]);
+        //         commit('userInfos', response.data.results[0]); 
+        //     })
             
-            .catch(function () {
-            });
-        }
+        //     .catch(function () {
+        //     });
+        // }
     }
 })
 export default store;
