@@ -1,7 +1,7 @@
 <template>
     <div :id="post.postId" class="card">
         <div v-if="post.isEditing">
-                <card-edit-post  v-model="post" :key="post.postId" :post="post"></card-edit-post>
+            <card-edit-post  v-model="post" :key="post.postId" :post="post"></card-edit-post>
         </div>
         <div v-else class="post-card">
             <div class="post-card_header" :class="{'header-mypost' : post.myPost}">    
@@ -52,15 +52,10 @@
                     </a>
                     <p v-if="!post.commentCount" class="comment_compt">0</p>
                     <p v-else class="comment_compt">{{ post.commentCount }}</p>
-                    
-                    
                 </div>
             </div>
-        </div>
-            
-        
+        </div> 
     </div>
-    
 </template>
 
 <script>
@@ -84,13 +79,13 @@ export default {
 
     methods: {
 
+        // Permet d'afficher le composant pour éditer le post
         toEdit: function () {
             return this.post.isEditing = true;
         },
 
+        // Gère l'ajout du like
         addLike: function() {
-
-           
             if(!this.post.myLike && !this.post.myDislike) {
                 this.post.myLike = true;
                 this.post.likeType = 1;
@@ -111,13 +106,12 @@ export default {
             return this.sendMyLike();
         },
 
+        // Gère l'ajout du dislike
         addDislike: function() {
-
             if(!this.post.myDislike && !this.post.myLike) {
                 this.post.myDislike = true;
                 this.post.likeType = -1;
-                this.post.likeCount--;
-                
+                this.post.likeCount--;    
             }
             else if(!this.post.myDislike && this.post.myLike) {          
                 this.post.myDislike = true;
@@ -134,6 +128,7 @@ export default {
             return this.sendMyLike();
         },
 
+        // Envoie le like dans le backend
         sendMyLike: function () {
             console.log("hop")
             console.log(this.post.likeType); 
@@ -143,16 +138,12 @@ export default {
             const token = user.token;
             const self = this;
             
-            // récupération des informations du profil
+            // récupération des informations du like
             const dataLike = {
                 userId: user.userId,
                 postId: self.post.postId,
                 type: self.post.likeType,
             };
-            console.log(dataLike);
-
-
-
             instance.post("/like/post", dataLike, {headers: { 'Authorization': `Bearer ${token}`},
                 }).then(function (response) {
                    console.log(response);
@@ -161,12 +152,6 @@ export default {
                 });
         },
     },
-
-
-    
-
-
-
 }
 
 </script>
@@ -178,10 +163,8 @@ export default {
     .post-card {
         display: flex;
         flex-direction: column;
-        
         border-radius: 15px;
         background-color: $color-white;
-
 
         &_header {
             display: flex;
@@ -189,16 +172,11 @@ export default {
             gap: $space-XXXsmall;
             padding: $space-XXsmall;
 
-            
-            
-
             .profil {
-
                 min-width: 50px;
                 height: 50px;
                 border-radius: 50%;
                 background: $color-secondary;
-
 
                 &_img {
                     width: 100%;
@@ -207,6 +185,7 @@ export default {
                     border-radius: 100%;
                 }
             }
+
             .divers {
                 display: flex;
                 justify-content: space-between;
@@ -217,8 +196,8 @@ export default {
                     &_title {
                         font-size: $font-large;
                         font-weight: 600;
-                    
                     }
+
                     &_body {
                         font-size: $font-small;
                         font-weight: 400;
@@ -232,13 +211,12 @@ export default {
                         
                     }
                 }
+
                 &_edit {
                     min-width: 50px;
                     display: flex;
                 }
-            }
-            
-            
+            }   
         }
 
         .header-mypost {
@@ -246,31 +224,32 @@ export default {
                 border-radius:  15px 15px 0 0 ;
             }
 
-        &_body{
+        &_body {
             padding: $space-XXsmall;
+
             &_img {
                 display: flex;
                 justify-content: center;
                 width: 100%;
                 max-height: 400px;
+
                 >img {
                     max-width: 100%;
                     max-height: 100%;
                     background-size: cover;
                     background-repeat: no-repeat;
-                    background-position: center;
-                    
+                    background-position: center;                   
                 }
             }
         }
+
         &_footer{
             font-size: $font-small;
             font-weight: 400;
             line-height: 1;
             color: $color-grey-dark;
             text-align: right;
-            padding: 0 $space-XXsmall $space-XXsmall $space-XXsmall;
-            
+            padding: 0 $space-XXsmall $space-XXsmall $space-XXsmall; 
         }
 
         &_btns {
@@ -280,28 +259,25 @@ export default {
             padding: $space-XXsmall;
             border-top: 3px solid $color-grey-light;
           
-
             .like {
-
                 display: flex;
                 align-items: center;
                 justify-content: center;
                 flex: 1 1 0;
                 
-
                 &_btn {
                     display: flex;
-                align-items: center;
-                justify-content: center;
-                width: 50px;
-                cursor: pointer;          
+                    align-items: center;
+                    justify-content: center;
+                    width: 50px;
+                    cursor: pointer;          
                     
-        
                     &_up {
                         width: 100%;
                         height: 100%;
                         transform: rotateZ(90deg);
                     }
+
                     &_down {
                         width: 100%;
                         height: 100%;
@@ -309,6 +285,7 @@ export default {
                     }
                 }
             }
+
             .comment {
                 display: flex;
                 align-items: center;

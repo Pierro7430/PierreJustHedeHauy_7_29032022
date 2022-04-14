@@ -22,21 +22,20 @@ export default {
         }
     },
     methods: {
-            admin: function () {
-                    this.isAdmin = true;
-                },
-    }
+        admin: function () {
+                this.isAdmin = true;
+        },
+}
 }
 
 </script>
 
 <style lang="scss">
-@import '../assets/scss/scss'; 
+    @import '../assets/scss/scss'; 
 
-.profile-edit-page {
-    display: flex;
-    flex-direction: column;
-    justify-content: flex-start;
-}   
-
+    .profile-edit-page {
+        display: flex;
+        flex-direction: column;
+        justify-content: flex-start;
+    }   
 </style>

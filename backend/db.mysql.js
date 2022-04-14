@@ -1,7 +1,6 @@
 // import de mysql
 const mysql = require('mysql2');
 
-
 // import du package dotenv pour utiliser les variables environnements
 const dotenv = require('dotenv').config();
 

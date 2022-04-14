@@ -3,13 +3,15 @@
         <h1 class="profile-edit_h1">Editer mon profil</h1>
 
         <div class="profile-edit_form">
-            <div class="avatar">
+            <div class="avatar" @click="checkFormIsValid()">
                  <div v-if="!image && !urlAvatar" class="avatar_preview">
                 </div>
                 <div v-else-if="!image" class="avatar_preview">
+                    {{checkFormIsValid()}}
                     <img :src="urlAvatar" />
                 </div>
                 <div v-else class="avatar_preview">
+                    {{checkFormIsValid()}}
                     <img :src="image" />
                 </div>
                
@@ -18,66 +20,41 @@
                     <label for="file">
                         <img class="edit-icon" src="../images/icones/edit-red.svg" alt="Edit profil" />
                     </label>
-                    <div @click="deleteImg()">
+                    <div @click="deleteImg() && checkFormIsValid()">
                         <img class="trash-icon" src="../images/icones/trash-red.svg"/>
-                    </div>
-                    
+                    </div>         
                 </div>
             </div>
 
             <div class="form-row">
                 <p>Nom</p>
-                <input
-                    @blur="checkFormLastname() && checkFormIsValid()"
-                    @focus="errorLastname = false"
-                    v-model="lastname"
-                    class="form-row_input"
-                    :class="{ 'form-row_input--error': errorLastname }"
-                    type="text"
-                />
-                <p v-if="errorLastname" class="form-row_error">
-                    {{ errors.lastnameIsNotValid }}
-                </p>
+                <input v-on:input="checkFormIsValid()" @focus="errorLastname = false" v-model="lastname" class="form-row_input" :class="{ 'form-row_input--error': errorLastname }" type="text"/>
+                <p v-if="errorLastname" class="form-row_error">{{ errors.lastnameIsNotValid }}</p>
             </div>
 
             <div class="form-row">
                 <p>Prénom</p>
-                <input
-                    @blur="checkFormFirstname() && checkFormIsValid()"
-                    @focus="errorFirstname = false"
-                    v-model="firstname"
-                    class="form-row_input"
-                    :class="{ 'form-row_input--error': errorFirstname }"
-                    type="text"
-                />
-                <p v-if="errorFirstname" class="form-row_error">
-                    {{ errors.firstnameIsNotValid }}
-                </p>
+                <input v-on:input="checkFormIsValid()" @focus="errorFirstname = false" v-model="firstname" class="form-row_input" :class="{ 'form-row_input--error': errorFirstname }" type="text"/>
+                <p v-if="errorFirstname" class="form-row_error">{{ errors.firstnameIsNotValid }}</p>
             </div>
 
             <div class="form-row">
                 <p>Localisation</p>
-                <input
-                    @blur="checkFormLocation() && checkFormIsValid()"
-                    @focus="errorLocation = false"
-                    v-model="location"
-                    class="form-row_input"
-                    :class="{ 'form-row_input--error': errorLocation }"
-                    type="text"
-                />
-                <p v-if="errorLocation" class="form-row_error">
-                    {{ errors.locationIsNotValid }}
-                </p>
+                <input  @focus="errorLocation = false" v-model="location" class="form-row_input" :class="{ 'form-row_input--error': errorLocation }" type="text"/>
+                <p v-if="errorLocation" class="form-row_error">{{ errors.locationIsNotValid }}</p>
             </div>
 
             <div class="form-row">
                 <p>Date de naissance</p>
-                <input v-model="birthDate" class="form-row_input" type="date" />
+                <input v-on:input="checkFormIsValid()" v-model="birthDate" class="form-row_input" type="date" />
             </div>
         </div>
 
         <div class="profile-edit_btn">
-            <button @click="editProfile()" :disabled="!formValidated" class="btn-basic btn-basic--submit-A" :class="{ 'btn-basic--disabled': !formValidated }">Valider</button>
+           
+            
+            <button :disabled="!formValidated" @click="editProfile()" class="btn-basic btn-basic--submit-A" :class="{'btn-basic--disabled' : !formValidated}">Mettre à jour le compte</button>
+            <button @click="cancelPost()" class="btn-basic btn-basic--submit-B">Annuler</button>
         </div>
     </div>
 </template>
@@ -89,6 +66,7 @@ const instance = axios.create({
 });
 import moment from "moment";
 const timestamp = moment.unix(1634726212);
+
 
 export default {
     name: "Card-profile-edit",
@@ -113,6 +91,7 @@ export default {
         };
     },
 
+    // Récupération des infos dynamiques
     mounted: function () {
         if (this.$store.state.user.userId == -1) {
             this.$router.push("/");
@@ -124,31 +103,55 @@ export default {
         user = JSON.parse(user);
         const token = user.token;
 
-        instance
-            .get("/profile/:" + user.userId, {
+        instance.get("/profile/:" + user.userId, {
                 headers: { Authorization: `Bearer ${token}` },
-            })
-            .then(function (response) {
-                self.lastname = response.data.results[0].lastname;
-                self.firstname = response.data.results[0].firstname;
-                self.location = response.data.results[0].location;
-                self.urlAvatar = response.data.results[0].photo_url;
-                if(response.data.results[0].birth_date != null) {
-                    self.birthDate = moment(response.data.results[0].birth_date).format("YYYY-MM-DD");
-                }
-            })
-            .catch(function (error) {
-                console.log(error);
-            });
+        })
+        .then(function (response) {
+            self.lastname = response.data.results[0].lastname;
+            self.firstname = response.data.results[0].firstname;
+            self.location = response.data.results[0].location;
+            self.urlAvatar = response.data.results[0].photo_url;
+            if(response.data.results[0].birth_date != null) {
+                self.birthDate = moment(response.data.results[0].birth_date).format("YYYY-MM-DD");
+            }
+        })
+        .catch(function (error) {
+            console.log(error);
+        });
     },
 
     methods: {
+        // Vérification si le form est OK
+		checkFormIsValid: function () {
+            if(this.lastname && this.firstname) {
+                this.formValidated = true;
+            }
+            else{
+                if(!this.lastname){
+                    this.errorLastname = true;
+                    this.errors.lastnameIsNotValid = "Votre nom de famille est obligatoire";
+                }
+                if(!this.firstname){
+                    this.errorFirstname = true;
+                    this.errors.firstnameIsNotValid = "Votre prénom est obligatoire";
+                }
+                this.formValidated = false;
+            }  
+        },
 
+        // Annulation des modifications et retour sur le profil
+        cancelPost: function () {
+            this.$router.push("/profile/")
+        },
+
+
+         // Suppression de l'image
         deleteImg: function () {
             this.image = '';
             this.urlAvatar = '';
         },
 
+         // modification de l'image
         onFileChange(event) {
             var files = event.target.files || event.dataTransfer.files;
             if (!files.length) return;
@@ -169,6 +172,7 @@ export default {
             reader.readAsDataURL(file);
         },
 
+        // Envoie de l'update au backend
         editProfile: function () {
 
             // récupération de l'id et du token dans le localstorage
@@ -205,87 +209,6 @@ export default {
                 }).catch(function (error) {
                     console.log(error);
                 });
-        },
-
-
-        checkFormIsValid: function () {
-            if (this.checkFormLastname() && this.checkFormFirstname()) {
-                if (this.checkFormLocation()) {
-                    this.formValidated = true;
-                } else {
-                    this.formValidated = false;
-                }
-            } else {
-                this.formValidated = false;
-            }
-        },
-
-        checkFormLastname: function () {
-            const regexLastname =
-                /^[a-zA-ZáàâäãåçéèêëíìîïñóòôöõúùûüýÿæœÁÀÂÄÃÅÇÉÈÊËÍÌÎÏÑÓÒÔÖÕÚÙÛÜÝŸÆŒ\-]+$/;
-            const checkLastname = regexLastname.test(this.lastname);
-            if (!this.lastname) {
-                this.errorLastname = true;
-                this.errors.lastnameIsNotValid =
-                    "Vous devez préciser votre nom";
-                return false;
-            } else {
-                if (!checkLastname) {
-                    this.errorLastname = true;
-                    this.errors.lastnameIsNotValid =
-                        "Les caractères spéciaux ainsi que les chiffres ne sont pas autorisés";
-                    return false;
-                } else {
-                    this.errorLastname = false;
-                    this.errors.lastnameIsNotValid = "";
-                    return true;
-                }
-            }
-        },
-
-        checkFormFirstname: function () {
-            const regexFirstname =
-                /^[a-zA-ZáàâäãåçéèêëíìîïñóòôöõúùûüýÿæœÁÀÂÄÃÅÇÉÈÊËÍÌÎÏÑÓÒÔÖÕÚÙÛÜÝŸÆŒ\-]+$/;
-            const checkFirstname = regexFirstname.test(this.firstname);
-            if (!this.firstname) {
-                this.errorFirstname = true;
-                this.errors.firstnameIsNotValid =
-                    "Vous devez préciser votre prénom";
-                return false;
-            } else {
-                if (!checkFirstname) {
-                    this.errorFirstname = true;
-                    this.errors.firstnameIsNotValid =
-                        "Les caractères spéciaux ainsi que les chiffres ne sont pas autorisés";
-                    return false;
-                } else {
-                    this.errorFirstname = false;
-                    this.errors.firstnameIsNotValid = "";
-                    return true;
-                }
-            }
-        },
-
-        checkFormLocation: function () {
-            const regexLocalisation =
-                /^[a-zA-ZáàâäãåçéèêëíìîïñóòôöõúùûüýÿæœÁÀÂÄÃÅÇÉÈÊËÍÌÎÏÑÓÒÔÖÕÚÙÛÜÝŸÆŒ\-]+$/;
-            const checkLocalisation = regexLocalisation.test(this.firstname);
-            if (!this.localisation) {
-                this.errorLocation = false;
-                this.errors.locationIsNotValid = "";
-                return true;
-            } else {
-                if (!checkLocalisation) {
-                    this.errorLocation = true;
-                    this.errors.locationIsNotValid =
-                        "Les caractères spéciaux ainsi que les chiffres ne sont pas autorisés";
-                    return false;
-                } else {
-                    this.errorLocation = false;
-                    this.errors.locationIsNotValid = "";
-                    return true;
-                }
-            }
         },
     },
 };
@@ -377,7 +300,6 @@ export default {
                             background: $color-secondary;
                         }
                     }
-
                 }
 
                 .avatar_preview {
@@ -440,11 +362,14 @@ export default {
         
 
          
-        }
+        }     
+
 
         &_btn {
             display: flex;
+            flex-direction: column;
             justify-content: space-between;
+            gap: $space-small;
 
 
             .btn-basic {
@@ -453,6 +378,17 @@ export default {
                 border: 1px solid;
                 border-radius: $space-small;
                 cursor: pointer;
+            }
+            
+            .btn-basic--submit-B {
+                color: $color-primary;
+                background-color: $color-white;
+                border-color: $color-primary;
+
+                &:hover, &focus, &click {
+                    color: $color-primary;
+                    background-color: $color-secondary;
+                }
             }
 
             .btn-basic--submit-A {

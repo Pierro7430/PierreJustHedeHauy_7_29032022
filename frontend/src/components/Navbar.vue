@@ -53,6 +53,7 @@ export default {
         };
     },
 
+    // Récupération de l'image profil ansi que du statut admin ou non
     mounted: function () {
         if (this.$store.state.user.userId == -1) {
             this.$router.push("/");
@@ -85,14 +86,19 @@ export default {
             });
     },
 
+    
     methods: {
+
+        // Fonction qui permet de se déconnecter
         logout: function () {
             this.$store.commit("logout");
             this.$router.push("/");
         },
+        // Permet de se d'aller voir son profil
         goToMyProfile: function () {
             this.$router.push("/profile");
         },
+        // Permet d'ouvrir ou fermer le menu
         checkMenu: function () {
             if (!this.menuOpen) {
                 this.menuOpen = true;
@@ -105,85 +111,87 @@ export default {
 </script>
 
 <style lang="scss">
-@import "../assets/scss/scss";
 
-.navbar {
-    width: 100%;
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    padding: $space-Xsmall;
-    background-color: $color-white;
-    border-bottom: 2px solid $color-secondary;
+    @import "../assets/scss/scss";
 
-    &_logo {
+    .navbar {
+        width: 100%;
         display: flex;
         align-items: center;
-        >a {
-            display: flex;
+        justify-content: space-between;
+        padding: $space-Xsmall;
+        background-color: $color-white;
+        border-bottom: 2px solid $color-secondary;
 
-            .logo-navbar {
-                width: 200px;
+        &_logo {
+            display: flex;
+            align-items: center;
+
+            >a {
+                display: flex;
+
+                .logo-navbar {
+                    width: 200px;
+                }
+            }
+        }
+
+        &_profil {
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            background: $color-secondary;
+
+            .profil-img {
+                width: 100%;
+                height: 100%;
+                object-fit: contain;
+                border-radius: 100%;
             }
         }
     }
 
-    
-
-    &_profil {
-        width: 50px;
-        height: 50px;
-        border-radius: 50%;
-        background: $color-secondary;
-
-        .profil-img {
-            width: 100%;
-            height: 100%;
-            object-fit: contain;
-            border-radius: 100%;
-        }
-    }
-}
-
-.menu {
-    display: flex;
-    align-items: center;
-    justify-content: flex-end;
-    padding: $space-Xsmall;
-    background-color: $color-white;
-    position: absolute;
-    width: 100%;
-    right: 0;
-    z-index: 10;
-
-    &_list {
+    .menu {
         display: flex;
-        flex-direction: column;
-        justify-content: center;
-        text-align: center;
-        gap: $space-XXsmall;
-        width: 100%;
-        padding: 0 $space-large;
-
-        &_line {
-            border: none;
-            height: 2px;
-            background-color: $color-secondary;
-        }
-        &_btn:hover,
-        :active {
-            color: $color-primary;
-        }
-    }
-    &_opacity {
+        align-items: center;
+        justify-content: flex-end;
+        padding: $space-Xsmall;
+        background-color: $color-white;
         position: absolute;
-        top: 100%;
+        width: 100%;
         right: 0;
-        width: 100vw;
-        min-height: calc(100vh - 100%);
-        background-color: $color-grey-dark;
-        opacity: 0.5;
-        z-index: 5;
+        z-index: 10;
+
+        &_list {
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            text-align: center;
+            gap: $space-XXsmall;
+            width: 100%;
+            padding: 0 $space-large;
+
+            &_line {
+                border: none;
+                height: 2px;
+                background-color: $color-secondary;
+            }
+
+            &_btn:hover,
+            :active {
+                color: $color-primary;
+            }
+        }
+        
+        &_opacity {
+            position: absolute;
+            top: 100%;
+            right: 0;
+            width: 100vw;
+            min-height: calc(100vh - 100%);
+            background-color: $color-grey-dark;
+            opacity: 0.5;
+            z-index: 5;
+        }
     }
-}
 </style>

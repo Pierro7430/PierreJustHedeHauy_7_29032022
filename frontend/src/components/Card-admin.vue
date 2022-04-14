@@ -25,22 +25,21 @@ export default {
         let user = localStorage.getItem("user");
         user = JSON.parse(user);
         const token = user.token;
-        instance
-            .get("/admin/:" + user.userId, {
-                headers: { Authorization: `Bearer ${token}` },
-            })
-            .then(function (response) {
-                if(response.data.results[0].is_admin == 1){
-                    self.isAdmin = true;
-                    self.$emit('user-admin', {isAdmin: true}); 
-                }
-                else {
-                    self.isAdmin = false;
-                }
-            })
-            .catch(function (error) {
-                console.log(error)             
-            });
+        instance.get("/admin/:" + user.userId, {
+            headers: { Authorization: `Bearer ${token}` },
+        })
+        .then(function (response) {
+            if(response.data.results[0].is_admin == 1){
+                self.isAdmin = true;
+                self.$emit('user-admin', {isAdmin: true}); 
+            }
+            else {
+                self.isAdmin = false;
+            }
+        })
+        .catch(function (error) {
+            console.log(error)             
+        });
     },
 
     

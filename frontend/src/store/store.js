@@ -26,9 +26,6 @@ let user = localStorage.getItem('user');
 }
 
 
-
-
-
 const store = createStore({
 
     state: {

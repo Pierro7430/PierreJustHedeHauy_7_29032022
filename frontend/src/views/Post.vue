@@ -1,61 +1,54 @@
-<template>
-    
+<template>  
     <div>
-        <navbar> </navbar>
+        <navbar></navbar>
         <card-admin  @user-admin="admin"></card-admin>
         <div class="post">
             <card-post  v-model="post" :key="post.post_id" :post="post"></card-post>
             <div class="post_create-answer">
                 <div class="form-row">
                     <input  v-if="!isWriting" @click="toAnswer()" class="form-row_input" type="text" placeholder="Répondre"/>
-                    <textarea v-else v-model="description" @blur="checkFormIsValid()" class="form-row_input" rows="5"/>
+                    <textarea v-else v-model="description"  v-on:input="checkFormIsValid()" class="form-row_input" rows="5"/>
                 </div>
                 <div v-if="!isWriting" ></div>
-                <div v-else class="form-img">
-                    <div v-if="!image && !urlImg" class="form-img_preview"></div>
-                    <div v-else-if="!image" class="form-img_preview">
-                        <img :src="urlImg" />
-                    </div>
-                    <div v-else class="form-img_preview">
-                        <img :src="image" />
-                    </div>
-                
-                    <div v-if="!image && !urlImg" class="form-img_upload">
-                        <input id="file" @change="onFileChange" @blur="checkFormIsValid()" type="file" />
-                        <label for="file">
-                            <img class="upload-icon" src="../images/icones/upload-red.svg" alt="Edit profil" />
-                        </label>
-                    </div>
+                    <div @click="checkFormIsValid()" v-else class="form-img">
+                        <div v-if="!image && !urlImg" class="form-img_preview"></div>
+                        <div v-else-if="!image" class="form-img_preview">
+                            {{checkFormIsValid()}}
+                            <img :src="urlImg" />
+                        </div>
+                        <div v-else class="form-img_preview">
+                            {{checkFormIsValid()}}
+                            <img :src="image" />
+                        </div>
+                    
+                        <div v-if="!image && !urlImg" class="form-img_upload">
+                            <input id="file" @change="onFileChange" @blur="checkFormIsValid()" type="file" />
+                            <label for="file">
+                                <img class="upload-icon" src="../images/icones/upload-red.svg" alt="Edit profil" />
+                            </label>
+                        </div>
 
-                    <div v-else class="form-img_edit">
-                        <input id="file" @change="onFileChange" @blur="checkFormIsValid()" type="file" />
-                        <label for="file">
-                            <img class="edit-icon" src="../images/icones/edit-red.svg" alt="Edit profil" />
-                        </label>
-                        <div @click="deleteImg()">
-                            <img class="trash-icon" src="../images/icones/trash-red.svg"/>
-                        </div> 
-                    </div>
-                    <div class="answer_btn">
-                    <button @click="cancelComment()" class="btn-basic btn-basic--submit-B">Annuler</button>
-                    <button @click="createComment()" :disabled="!formValidated" class="btn-basic btn-basic--submit-A" :class="{'btn-basic--disabled' : !formValidated}">Créer</button>
-
-                </div> 
+                        <div v-else class="form-img_edit">
+                            <input id="file" @change="onFileChange" @blur="checkFormIsValid()" type="file" />
+                            <label for="file">
+                                <img class="edit-icon" src="../images/icones/edit-red.svg" alt="Edit profil" />
+                            </label>
+                            <div @click="deleteImg() && checkFormIsValid()">
+                                <img class="trash-icon" src="../images/icones/trash-red.svg"/>
+                            </div> 
+                        </div>
+                        <div class="answer_btn">
+                        <button @click="cancelComment()" class="btn-basic btn-basic--submit-B">Annuler</button>
+                        <button @click="createComment()" :disabled="!formValidated" class="btn-basic btn-basic--submit-A" :class="{'btn-basic--disabled' : !formValidated}">Créer</button>
+                    </div> 
                 </div>
-                            
-            
             </div>
             <div class="list-comments">
                 <card-comment v-for="comment in allComments" :key="comment.comment_id" :comment="comment"> </card-comment>
             </div>
-
         </div>
-        
-         
-        
         <card-footer></card-footer>
     </div>
-  
 </template>
 
 <script>
@@ -92,106 +85,109 @@ export default {
         }
     },
 
+    // au chargement de la page, on va récupérer toutes les informations dynamiques dans le back-end
     mounted:  function () {
-            if (this.$store.state.user.userId == -1) {
-                this.$router.push("/");
-                return;
-            }
-            const self = this;
-            let user = localStorage.getItem("user");
-            user = JSON.parse(user);
-            const token = user.token;
-            const postId = window.location.href.split('=')[1];
 
-            axios.all([
-                instance.get("/post/:" + postId, {
-                    headers: { Authorization: `Bearer ${token}` },
-                }),
-                instance.get("/like/post/:" + user.userId, {
-                    headers: { Authorization: `Bearer ${token}` },
-                }),
-                instance.get("/one-count-comment/:" + postId, {
-                    headers: { Authorization: `Bearer ${token}` },
-                }),
+        // Vérification si si le user est correctement authentifié
+        if (this.$store.state.user.userId == -1) {
+            this.$router.push("/");
+            return;
+        }
+        const self = this;
+        let user = localStorage.getItem("user");
+        user = JSON.parse(user);
+        const token = user.token;
+        const postId = window.location.href.split('=')[1];
 
-            ])            
-                .then(axios.spread((response1, response2, response3) => {
-                    console.log(response3);
-                    const dataPost = response1.data.results[0];      
-                    // if (!dataPost.postId) {
-                    //     self.$router.push('/home/');
-                    // }
-                        
-                    self.post = {
-                        postId: '',
-                        url: '',
-                        title: '',
-                        description: '',
-                        urlImg: '',
-                        urlAvatar: '',
-                        creator: '',
-                        fullname: '',
-                        dateCreated: '',
-                        dateUpdated: '',
-                        updated:'',
-                        likeCount: '',
-                        myLike: '',
-                        myDislike: '',
-                        likeType: '',
-                        commentCount: '',
-                        myPost: false,
-                    },
+        axios.all([
+            instance.get("/post/:" + postId, {
+                headers: { Authorization: `Bearer ${token}` },
+            }),
+            instance.get("/like/post/:" + user.userId, {
+                headers: { Authorization: `Bearer ${token}` },
+            }),
+            instance.get("/one-count-comment/:" + postId, {
+                headers: { Authorization: `Bearer ${token}` },
+            }),
+
+        ])            
+            .then(axios.spread((response1, response2, response3) => {
+                console.log(response3);
+                const dataPost = response1.data.results[0];      
+                // if (!dataPost.postId) {
+                //     self.$router.push('/home/');
+                // }
                     
-                    self.post.postId = dataPost.post_Id;
-                    self.post.url = "/post/:" + dataPost.post_Id;
-                    self.post.title = dataPost.post_title;
-                    self.post.description = dataPost.post_description;
-                    self.post.urlImg = dataPost.post_imgUrl;
-                    self.post.creator = dataPost.post_creator;
-                    self.post.fullname = dataPost.fullName;
-                    self.post.urlAvatar = dataPost.photo_url;
-                    self.post.dateCreated = moment(dataPost.post_date_created).format("DD-MM-YYYY");
-                    self.post.dateUpdated = moment(dataPost.post_date_updated).format("DD-MM-YYYY");
-                    self.post.updated = dataPost.post_updated;
-                    self.post.likeCount = dataPost.likePostCount;
-                    self.post.myLike = false;
-                    self.post.myDislike = false;
+                self.post = {
+                    postId: '',
+                    url: '',
+                    title: '',
+                    description: '',
+                    urlImg: '',
+                    urlAvatar: '',
+                    creator: '',
+                    fullname: '',
+                    dateCreated: '',
+                    dateUpdated: '',
+                    updated:'',
+                    likeCount: '',
+                    myLike: '',
+                    myDislike: '',
+                    likeType: '',
+                    commentCount: '',
+                    myPost: false,
+                },
+                
+                self.post.postId = dataPost.post_Id;
+                self.post.url = "/post/:" + dataPost.post_Id;
+                self.post.title = dataPost.post_title;
+                self.post.description = dataPost.post_description;
+                self.post.urlImg = dataPost.post_imgUrl;
+                self.post.creator = dataPost.post_creator;
+                self.post.fullname = dataPost.fullName;
+                self.post.urlAvatar = dataPost.photo_url;
+                self.post.dateCreated = moment(dataPost.post_date_created).format("DD-MM-YYYY");
+                self.post.dateUpdated = moment(dataPost.post_date_updated).format("DD-MM-YYYY");
+                self.post.updated = dataPost.post_updated;
+                self.post.likeCount = dataPost.likePostCount;
+                self.post.myLike = false;
+                self.post.myDislike = false;
 
-      
-                    if(self.post.creator == user.userId) {
-                        self.post.myPost = true;
+    
+                if(self.post.creator == user.userId) {
+                    self.post.myPost = true;
+                }
+    
+                const dataMyLikes = response2.data.results[0];
+
+                if(dataMyLikes != null && self.post.postId == dataMyLikes.post_Id){
+                    if(dataMyLikes.like_post_type == 0){
+                        self.post.myLike = false;
+                        self.post.myDislike = false;     
                     }
-     
-                    const dataMyLikes = response2.data.results[0];
-
-                    if(dataMyLikes != null && self.post.postId == dataMyLikes.post_Id){
-                        if(dataMyLikes.like_post_type == 0){
-                            self.post.myLike = false;
-                            self.post.myDislike = false;     
-                        }
-                        if(dataMyLikes.like_post_type == 1){
-                            self.post.myLike = true;
-                            self.post.myDislike =  false;
-                        }
-                        if(dataMyLikes.like_post_type == -1){
-                            self.post.myLike = false;
-                            self.post.myDislike = true;
-                        }
-                    } 
-                    self.post.commentCount = response3.data.results[0].commentCount;
+                    if(dataMyLikes.like_post_type == 1){
+                        self.post.myLike = true;
+                        self.post.myDislike =  false;
+                    }
+                    if(dataMyLikes.like_post_type == -1){
+                        self.post.myLike = false;
+                        self.post.myDislike = true;
+                    }
+                } 
+                self.post.commentCount = response3.data.results[0].commentCount;
 
 
-                    self.getComments();
-                    
-             
-                }))
-                .catch(function (error) {
-                    console.log(error);
-                })
+                self.getComments();
+                
+            
+            }))
+            .catch(function (error) {
+                console.log(error);
+            })
         },
 
     methods : {
-
+        // Une fois le post chargé, on récupère les infos des commentaires
         getComments : function () {
             if (this.$store.state.user.userId == -1) {
                 this.$router.push("/");
@@ -279,14 +275,17 @@ export default {
                 });
         },
         
+        // Indique que le compte est bien admin
         admin: function () {
             this.isAdmin = true;
         },
 
+        // Active le form permetttant de repondre
         toAnswer : function () {
             this.isWriting = true;
         },
-
+        
+        // Annule commmentaire
         cancelComment : function () {
             this.isWriting = false;
             this.description = "";
@@ -294,6 +293,7 @@ export default {
             this.image = "";
         },
 
+        // Chargement d'une image dans la réponse
          onFileChange(event) {
             var files = event.target.files || event.dataTransfer.files;
             if (!files.length) return;
@@ -314,13 +314,15 @@ export default {
             reader.readAsDataURL(file);
         },
 
+        // Suppression de l'image dans la réponse
         deleteImg: function () {
             this.image = '';
             this.urlImg = '';
         },
 
+        // Le form est valide car il n'est pas vide (txt ou image)
         checkFormIsValid: function () {
-            if(!this.description || !this.urlImg || !this.image){
+            if(this.description || this.urlImg || this.image){
                     this.formValidated = true;
                 }
                 else {
@@ -328,6 +330,7 @@ export default {
                 }
         },
 
+        // Envoie de la réponse dans le backend
         createComment: function () {
             // récupération de l'id et du token dans le localstorage
             let user = localStorage.getItem("user");
@@ -362,12 +365,9 @@ export default {
                     self.getComments();
                 }).catch(function (error) {
                     console.log(error);
-                });
-        
-            
+                });  
         },
     }
-
 }
     
 
@@ -381,9 +381,7 @@ export default {
     display: flex;
     flex-direction: column;
     justify-content: flex-start;
-    
-    
-
+    padding: $space-Xsmall;
 
     &_create-answer {
         display: flex;

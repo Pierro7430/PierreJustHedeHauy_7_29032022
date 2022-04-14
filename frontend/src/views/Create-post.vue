@@ -5,12 +5,8 @@
         <div class="create-post"> 
             <card-create-post></card-create-post>
         </div>
-        <card-footer></card-footer>
-        
+        <card-footer></card-footer>   
     </div>
-    
-    
-  
 </template>
 
 <script>
@@ -37,8 +33,8 @@ export default {
     },
     methods: {
         admin: function () {
-                this.isAdmin = true;
-            },
+            this.isAdmin = true;
+        },
     }
 }
     
@@ -48,12 +44,11 @@ export default {
 
 <style lang="scss">
 
-@import '../assets/scss/scss';
-.create-post {
-    display: flex;
-    flex-direction: column;
-    justify-content: flex-start;
-}   
-
+    @import '../assets/scss/scss';
+    .create-post {
+        display: flex;
+        flex-direction: column;
+        justify-content: flex-start;
+    }   
 
 </style>

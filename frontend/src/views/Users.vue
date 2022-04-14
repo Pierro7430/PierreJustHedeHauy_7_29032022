@@ -4,14 +4,9 @@
         <card-admin  @user-admin="admin"></card-admin>
         <div class="users"> 
             <card-info-user v-for="user in allUsers" :key="user.id" :user="user"></card-info-user>
-            
         </div>
         <card-footer></card-footer>
-        
     </div>
-    
-    
-  
 </template>
 
 <script>
@@ -33,13 +28,11 @@ export default {
     data : function () {
         return {
             isAdmin: false,
-            user : {
-                
-            },
+            user : {},
             allUsers : [],
         }
     },
-
+    //récupération des informations dynamiques
     mounted: function () {
         if (this.$store.state.user.userId == -1) {
             this.$router.push("/");
@@ -55,7 +48,6 @@ export default {
                 headers: { Authorization: `Bearer ${token}` },
             })
             .then(function (response) {
-                console.log(response);
                 response.data.results.forEach(element => {
                     self.user = {
                         id: '',
@@ -101,8 +93,8 @@ export default {
 
     methods: {
         admin: function () {
-                this.isAdmin = true;
-            },
+            this.isAdmin = true;
+        },
     }
 }
     
@@ -113,14 +105,13 @@ export default {
 <style lang="scss">
 
 @import '../assets/scss/scss';
+
     .users {
         display: flex;
         flex-direction: column;
         justify-content: center;
         padding: $space-XXXsmall; 
-        gap: $space-Xsmall;
-
-        
+        gap: $space-Xsmall; 
     }   
 
 

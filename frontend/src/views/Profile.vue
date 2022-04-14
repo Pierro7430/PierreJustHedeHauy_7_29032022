@@ -31,12 +31,12 @@ export default {
 </script>
 
 <style lang="scss">
-@import '../assets/scss/scss'; 
+    @import '../assets/scss/scss'; 
 
-.profil-page {
-    display: flex;
-    flex-direction: column;
-    justify-content: flex-start;
-}   
+    .profil-page {
+        display: flex;
+        flex-direction: column;
+        justify-content: flex-start;
+    }   
 
 </style>

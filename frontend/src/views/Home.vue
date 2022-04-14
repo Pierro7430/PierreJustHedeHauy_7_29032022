@@ -10,7 +10,6 @@
         <div class="home-page_card-list">
             <card-post v-for="post in allPosts" :key="post.post_id" :post="post"></card-post>
         </div>
-        
         <card-footer> </card-footer> 
     </div>
 </template>
@@ -42,6 +41,7 @@
         }
     },
 
+    // Récupération des infos dynamiques
     mounted: function () {
             
         if (this.$store.state.user.userId == -1) {
@@ -49,7 +49,6 @@
             return;
         }
 
-        
         let user = localStorage.getItem("user");
         user = JSON.parse(user);
         const token = user.token;
@@ -148,7 +147,6 @@
                             self.post.myComment = true;
                         }
                     }),
-                    console.log(self.post)
 
                     self.allPosts.push(this.post);                 
                 })            
@@ -175,56 +173,54 @@
 </script>
 
 <style lang="scss">
-@import '../assets/scss/scss'; 
 
-.home-page {
-    display: flex;
-    flex-direction: column;
-    justify-content: flex-start;
-    background-color: $color-grey-light;
+    @import '../assets/scss/scss'; 
 
-    
-
-    &_create {
+    .home-page {
         display: flex;
-        justify-content: center;
         flex-direction: column;
-        background-color: $color-white;
-        padding:  $space-Xsmall; 
-        border-bottom: 1px solid $color-secondary;
+        justify-content: flex-start;
+        background-color: $color-grey-light;
 
-        .form-row {
+        &_create {
             display: flex;
-            flex-direction: column;
             justify-content: center;
-            gap: $space-XXXsmall;
+            flex-direction: column;
+            background-color: $color-white;
+            padding:  $space-Xsmall; 
+            border-bottom: 1px solid $color-secondary;
 
-            &_input {
-            padding: 8px;
-            border: 1px solid $color-grey-light;
-            border-radius: 8px;
-            background:$color-grey-light;
-            font-weight: 500;
-            font-size: $font-medium;
+            .form-row {
+                display: flex;
+                flex-direction: column;
+                justify-content: center;
+                gap: $space-XXXsmall;
 
-                &:focus, &:hover {
-                    background: $color-white;
-                    outline: none;
-                    border: 1px solid $color-primary;
-                    box-shadow: 0px 0px 10px 1px $color-secondary;
+                &_input {
+                padding: 8px;
+                border: 1px solid $color-grey-light;
+                border-radius: 8px;
+                background:$color-grey-light;
+                font-weight: 500;
+                font-size: $font-medium;
+
+                    &:focus, &:hover {
+                        background: $color-white;
+                        outline: none;
+                        border: 1px solid $color-primary;
+                        box-shadow: 0px 0px 10px 1px $color-secondary;
+                    }
                 }
             }
         }
-    }
-    &_card-list {
-        display: flex;
-        flex-direction: column;
-        justify-content: center;
-        padding: $space-Xsmall; 
-        gap: $space-Xsmall;
-        
 
-    }
-} 
+        &_card-list {
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            padding: $space-Xsmall; 
+            gap: $space-Xsmall;
+        }
+    } 
 
 </style>

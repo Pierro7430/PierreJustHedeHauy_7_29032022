@@ -1,9 +1,7 @@
 <template>
     <div v-if="!deleteMyAccount" class="card-profile">
         <h1 class="card-profile_title">Mon profil</h1>
-        <div v-if="!urlAvatar" class="card-profile_img">
-            
-        </div>
+        <div v-if="!urlAvatar" class="card-profile_img"></div>
         <div v-else class="card-profile_img">
             <img class="profil-imgXL" :src="urlAvatar" alt="Image avatar">
         </div>
@@ -27,7 +25,6 @@
             <button @click="this.deleteMyAccount = false" class="btn-basic btn-basic--submit-B">ANNULER</button>
             <button @click="remove()" class="btn-basic btn-basic--submit-A">SUPPRIMER</button>
         </div>
-        
     </div>
 </template>
 
@@ -42,7 +39,6 @@ import moment from "moment";
 const timestamp = moment.unix(1634726212);
 
 
-
 export default {
     name: 'Card-profile',
     data: function () {
@@ -54,13 +50,12 @@ export default {
             birthDate : '',
             age: '',
             urlAvatar : '',
-            deleteMyAccount: false,
-        
+            deleteMyAccount: false,  
         }
     },
 
-    computed: {
-        
+    computed: {    
+        // Fonction qui perlet de calculer l'age à partir de la date de naissance et de la date du jour
         getAge: function () {
             const today = new Date();
             const dateBirth = new Date(this.birthDate);
@@ -72,14 +67,13 @@ export default {
             this.age = age;
             return this.age;
         },
-
     },
 
+    // Récupération des informations dynamiques
     mounted: function () {
-        
         if (this.$store.state.user.userId == -1) {
-        this.$router.push('/');
-        return ;
+            this.$router.push('/');
+            return ;
         }       
         const self = this;
         let user = localStorage.getItem('user');
@@ -99,63 +93,56 @@ export default {
             })
             .catch(function (error) {
                 console.log(error)
-            }); 
-        
-
-       
+            });  
     },
 
 
     methods: {
 
+        // Permet d'aller editer son profil
         goToEditMyProfile: function () {
             this.$router.push('/profile-edit')
         },
 
+        // Permet de supprimer son compte
         remove: function () {
-
             if (this.$store.state.user.userId == -1) {
             this.$router.push("/");
             return;
         }
-
         const self = this;
         let user = localStorage.getItem("user");
         user = JSON.parse(user);
         const token = user.token;
-
-
-            instance
-                    .delete("/profile/:" + user.userId,  {
-                        headers: { Authorization: `Bearer ${token}` },
-                    })
-                    .then(function (response) {
-                        self.$store.commit("logout");
-                        self.$router.push("/");
-                    })
-                    .catch(function (error) {
-                        console.log(error);
-                    });
+        instance.delete("/profile/:" + user.userId,  {
+            headers: { Authorization: `Bearer ${token}` },
+        })
+            .then(function (response) {
+                self.$store.commit("logout");
+                self.$router.push("/");
+            })
+            .catch(function (error) {
+                console.log(error);
+            });
 
         },
     }
 }
+
 </script>
 
 <style lang="scss">
 
-@import '../assets/scss/scss'; 
-.card-profile {
+    @import '../assets/scss/scss'; 
+    .card-profile {
         width: 100%;
         background-color: $color-white;
         padding: $space-medium;
-
         display: flex;
         flex-direction: column;
         justify-content: center;
         align-items: center;
         gap: $space-small;
-
 
         &_img {
             width: 200px;
@@ -167,15 +154,13 @@ export default {
                 width: 100%;
                 height: 100%;
                 object-fit: contain;
-                border-radius: 100%;
-                
+                border-radius: 100%;     
             }
         }
 
         &_title {
             font-weight: 400;
             font-size: $font-large;
-        
         }
 
         &_name {
@@ -195,34 +180,34 @@ export default {
         }
 
         .btn-modify {
-        color: $color-primary;
-        background-color: $color-white;
-        border: 1px solid $color-primary;
-        border-radius: $space-small;
-        font-size: $font-medium;
-        cursor: pointer;
-        padding: $space-XXXsmall $space-Xsmall;
+            color: $color-primary;
+            background-color: $color-white;
+            border: 1px solid $color-primary;
+            border-radius: $space-small;
+            font-size: $font-medium;
+            cursor: pointer;
+            padding: $space-XXXsmall $space-Xsmall;
 
-            &:hover, &focus, &click {
-                color: $color-primary;
-                background-color: $color-secondary;
+                &:hover, &focus, &click {
+                    color: $color-primary;
+                    background-color: $color-secondary;
+                }
             }
-        }
 
         .btn-delete {
             color: $color-primary;
             background: none;
             font-weight: 400;
             border: none;
+
             &:hover, &focus, &click {
                 text-decoration: underline;
             }
-
         }
-}
+    }
+    
 
     .delete-account {
-        
         background-color: $color-white;
         display: flex;
         flex-direction: column;
@@ -231,8 +216,6 @@ export default {
         gap: $space-medium;
         padding: $space-Xlarge $space-medium;
             
-            
-
         &_body{
             display: flex;
             flex-direction: column;
@@ -243,17 +226,14 @@ export default {
 
             > h2 {
                 font-size: $font-large;
-
             }
-            
-
         }
 
         &_btn {
-        display: flex;
-        flex-direction: column;
-        justify-content: space-between;
-        gap: $space-regular;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            gap: $space-regular;
 
             .btn-basic {
                 font-size: $font-medium;
@@ -264,9 +244,9 @@ export default {
             }
 
             .btn-basic--submit-B {
-            color: $color-primary;
-            background-color: $color-white;
-            border-color: $color-primary;
+                color: $color-primary;
+                background-color: $color-white;
+                border-color: $color-primary;
 
                 &:hover, &focus, &click {
                     color: $color-primary;
@@ -283,11 +263,9 @@ export default {
                     color: $color-primary;
                     background-color: $color-secondary;
                 }
-            }
-
-        
+            } 
+        }
     }
-}
 
 
 

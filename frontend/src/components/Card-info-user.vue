@@ -50,7 +50,7 @@ export default {
 
     methods: {
 
-    
+        // Suppression d'un compte utilisateur
         deleteUser: function () {
             // récupération de l'id et du token dans le localstorage
             let user = localStorage.getItem("user");
@@ -60,7 +60,7 @@ export default {
             const userIdToDelete = this.user.id;
             
 
-            instance.delete("/admin/user/:"+ userIdToDelete, {headers: { 'Authorization': `Bearer ${token}`},
+            instance.delete("/profile/:"+ userIdToDelete, {headers: { 'Authorization': `Bearer ${token}`},
                 }).then(function (response) {
                    self.$router.go('/Users')
                 }).catch(function (error) {

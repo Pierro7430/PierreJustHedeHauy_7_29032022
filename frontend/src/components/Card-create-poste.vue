@@ -8,30 +8,24 @@
         <div class="card-create-post_form">
             <div class="form-row">
                 <p>Titre</p>
-                <input  v-model="title" class="form-row_input" :class="{'form-row_input--error' : errorTitle} " type="text"/>
-                <p v-if="errorTitle" class="form-row_error"></p>
+                <input v-on:input="checkFormIsValid()" v-model="title" class="form-row_input" type="text"/>
             </div>
             
-
             <div class="form-row">
                 <p>Description</p>
-                <textarea v-model="description" class="form-row_input" :class="{'form-row_input--error' : errorDescription}" rows="10"/>
-                <p  v-if="errorDescription" class="form-row_error">}</p>
+                <textarea v-on:input="checkFormIsValid()" v-model="description" class="form-row_input" rows="10"/>
             </div>
-
-            
-            <div class="form-img">
+           
+            <div class="form-img" @click="checkFormIsValid()">
                 <p>Image</p>
-                <div v-if="!image && !urlImg" class="form-img_preview"></div>
-                <div v-else-if="!image" class="form-img_preview">
-                    <img :src="urlImg" />
-                </div>
+                <div v-if="!image" class="form-img_preview"></div>
                 <div v-else class="form-img_preview">
+                    {{checkFormIsValid()}}
                     <img :src="image" />
                 </div>
                
-                <div v-if="!image && !urlImg" class="form-img_upload">
-                    <input id="file" @change="onFileChange" type="file" />
+                <div v-if="!image" class="form-img_upload">
+                    <input  id="file" @change="onFileChange" type="file" />
                     <label for="file">
                         <img class="upload-icon" src="../images/icones/upload-red.svg" alt="Edit profil" />
                     </label>
@@ -42,7 +36,7 @@
                     <label for="file">
                         <img class="edit-icon" src="../images/icones/edit-red.svg" alt="Edit profil" />
                     </label>
-                    <div @click="deleteImg()">
+                    <div @click="deleteImg() && checkFormIsValid()">
                         <img class="trash-icon" src="../images/icones/trash-red.svg"/>
                     </div> 
                 </div>
@@ -53,7 +47,6 @@
         <div class="card-create-post_btn">
             <button @click="cancelPost()" class="btn-basic btn-basic--submit-B">Annuler</button>
             <button @click="createPost()" :disabled="!formValidated" class="btn-basic btn-basic--submit-A" :class="{'btn-basic--disabled' : !formValidated}">Créer</button>
-
         </div>
 
     </div>
@@ -76,46 +69,40 @@ name: 'Card-create-post',
         return {
             title: '',
             description: '',
-            urlImg: "",
-            image: "",
-            infoImg: "",
-            formValidated: true,
-            errorTitle: false,
-            errorUrlImg: false,
-            errorDescription: false,
-            errors: {
-                titleIsNotValid: "",
-                descriptionIsNotValid: "",
-                urlImgIsNotValid: "",
-            }
+            image: '',
+            infoImg: '',
+            formValidated: false,
         }
     },
 
 
     methods: {
-        // checkFormIsValid: function () {
 
-        //     if(this.postTitle != ''){
-        //         if(this.postImg != '' || this.postDescription != ''){
-        //             this.formValidated = true;
-        //         }
-        //         else {
-        //             this.formValidated = false;
-        //         }
-        //     } 
-        //     else {
-        //         this.formValidated = false;
-        //     }
-        // },
+        // Vérification si le form contient bien un titre et du contenu (image ou txt)
+        checkFormIsValid: function () {
+            if(this.title){
+                if(this.image || this.description){
+                    this.formValidated = true;
+                }
+                else {
+                    this.formValidated = false;
+                }
+            } 
+            else {
+                this.formValidated = false;
+            }
+        },
+        
+        // Si on supprime l'image choisie
         deleteImg: function () {
             this.image = '';
-            this.urlImg = '';
+            this.infoImg = '';
         },
 
+        // Si on choisie une image
         onFileChange(event) {
             var files = event.target.files || event.dataTransfer.files;
             if (!files.length) return;
-            this.urlImg = '';
             this.infoImg = files[0];
             this.createImage(files[0]);
         },
@@ -132,7 +119,7 @@ name: 'Card-create-post',
             reader.readAsDataURL(file);
         },
 
-
+        // Creation du post
         createPost: function () {
             // récupération de l'id et du token dans le localstorage
             let user = localStorage.getItem("user");
@@ -144,7 +131,6 @@ name: 'Card-create-post',
             const postInfo = {
                 postTitle: this.title,
                 postDescription: this.description,
-                postImgUrl: this.urlImg,
                 postCreator: user.userId,
             };
 
@@ -165,9 +151,7 @@ name: 'Card-create-post',
                     self.$router.push("/home");
                 }).catch(function (error) {
                     console.log(error);
-                });
-        
-            
+                });            
         },
 
         cancelPost: function () {
@@ -226,20 +210,7 @@ name: 'Card-create-post',
                     border: 1px solid $color-primary;
                     box-shadow: 0px 0px 10px 1px $color-secondary;
                 }
-            }
-            
-
-            &_input--error {
-            background:$color-secondary;
-
-                &:focus, &:hover {
-                    background: $color-secondary;
-                    outline: none;
-                    border: 1px solid $color-primary;
-                    box-shadow: 0px 0px 10px 1px $color-secondary;
-                }
-            }
-            
+            }          
         }
         
         .form-img {
@@ -357,10 +328,7 @@ name: 'Card-create-post',
                         background: $color-secondary;
                     }
                 }
-
-            }
-
-                
+            }         
         }
     }
     

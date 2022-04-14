@@ -15,33 +15,46 @@
       <h1 class="card-login_main_h1" v-if="mode == 'login'">Connexion</h1>
       <h1 class="card-login_main_h1" v-else>Inscription</h1>
       <form class="card-login_main_form">
-        <div class="form-row">
+
+        <div class="form-row" v-if="mode == 'create'">
           <p>Adresse mail</p>
-          <input @blur="checkFormMail() && checkFormIsValid()"  @focus="errorEmail = false" v-model="email" class="form-row_input" :class="{'form-row_input--error' : errorEmail} " type="text" autocomplete ="email" />
+          <input v-on:input="checkFormMail() && checkFormIsValid()" @focus="errorEmail = false" v-model="email" class="form-row_input" :class="{'form-row_input--error' : errorEmail} " type="text" autocomplete ="email" />
+          <p v-if="errorEmail" class="form-row_error">{{errors.emailIsNotValid}} {{errors.emailDoesntExist}} {{errors.emailExistAlready}}</p>
+        </div>
+
+        <div class="form-row" v-if="mode == 'login'">
+          <p>Adresse mail</p>
+          <input v-on:input="checkFormMail()" @focus="errorEmail = false" v-model="email" class="form-row_input" :class="{'form-row_input--error' : errorEmail} " type="text" autocomplete ="email" />
           <p v-if="errorEmail" class="form-row_error">{{errors.emailIsNotValid}} {{errors.emailDoesntExist}} {{errors.emailExistAlready}}</p>
         </div>
 
         <div class="form-row" v-if="mode == 'create'">
           <p>Nom</p>
-          <input @blur="checkFormLastname() && checkFormIsValid()" @focus="errorLastname = false" v-model="lastname" class="form-row_input" :class="{'form-row_input--error' : errorLastname}" type="text" autocomplete ="family-name"/>
+          <input v-on:input="checkFormLastname() && checkFormIsValid()" @focus="errorLastname = false" v-model="lastname" class="form-row_input" :class="{'form-row_input--error' : errorLastname}" type="text" autocomplete ="family-name"/>
           <p  v-if="errorLastname" class="form-row_error">{{errors.lastnameIsNotValid }}</p>        
         </div>
 
         <div class="form-row" v-if="mode == 'create'">
           <p>Prénom</p>
-          <input @blur="checkFormFirstname() && checkFormIsValid()" @focus="errorFirstname = false" v-model="firstname" class="form-row_input" :class="{'form-row_input--error' : errorFirstname}" type="text" autocomplete ="given-name"/>
+          <input v-on:input="checkFormFirstname() && checkFormIsValid()" @focus="errorFirstname = false" v-model="firstname" class="form-row_input" :class="{'form-row_input--error' : errorFirstname}" type="text" autocomplete ="given-name"/>
           <p  v-if="errorFirstname" class="form-row_error">{{errors.firstnameIsNotValid }}</p>
         </div>
 
-        <div class="form-row">
+        <div class="form-row" v-if="mode == 'create'">
           <p>Mot de passe</p>
-          <input @blur="checkFormPassword() && checkFormIsValid()" @focus="errorPassword = false" v-model="password" class="form-row_input" :class="{'form-row_input--error' : errorPassword}" type="password" autocomplete ="current-password"/>
-          <p  v-if="errorPassword" class="form-row_error">{{errors.passwordIsNotValid }} {{errors.passwordDoesntMatch }}</p>
+          <input v-on:input="checkFormPassword() && checkFormIsValid()" @focus="errorPassword = false" v-model="password" class="form-row_input" :class="{'form-row_input--error' : errorPassword}" type="password" autocomplete ="current-password"/>
+          <p  v-if="errorPassword" class="form-row_error">{{errors.passwordIsNotValid }}</p>
+        </div>
+
+        <div class="form-row" v-if="mode == 'login'">
+          <p>Mot de passe</p>
+          <input @focus="errorPassword = false" v-model="password" class="form-row_input" :class="{'form-row_input--error' : errorPassword}" type="password" autocomplete ="current-password"/>
+          <p  v-if="errorPassword" class="form-row_error">{{errors.passwordDoesntMatch }}</p>
         </div>
       </form>
 
       <div class="card-login_main_btn" v-if="mode == 'login'">
-        <button :disabled="!formValidated" @click="login()" class="btn-login" :class="{'btn-login--disabled' : !formValidated}">Se connecter</button>
+        <button  @click="login()" class="btn-login">Se connecter</button>
       </div>
       <div class="card-login_main_btn" v-else>
         <button :disabled="!formValidated" @click="createAccount()" class="btn-login" :class="{'btn-login--disabled' : !formValidated}">Créer le compte</button>
@@ -109,6 +122,7 @@ export default {
   
   methods: {
     
+    // Vérification si leform est OK
 		checkFormIsValid: function () {
 			if (this.mode == 'create') {
 				if(this.checkFormMail() && this.checkFormLastname() && this.checkFormFirstname() && this.checkFormPassword()) {
@@ -128,6 +142,7 @@ export default {
 			}
 		},
 
+    // Vérification de la regex email
     checkFormMail: function () {
       const regexEmail = /^(([^<>()\[\]\\.,;:\s@"]+(\.[^<>()\[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
       const checkMail = regexEmail.test(this.email);
@@ -150,6 +165,7 @@ export default {
       }
     },
 
+    // Vérification de la regex lastname
 		checkFormLastname: function () {
       const regexLastname = /^[a-zA-ZáàâäãåçéèêëíìîïñóòôöõúùûüýÿæœÁÀÂÄÃÅÇÉÈÊËÍÌÎÏÑÓÒÔÖÕÚÙÛÜÝŸÆŒ\-]+$/;
       const checkLastname = regexLastname.test(this.lastname);
@@ -172,6 +188,7 @@ export default {
       }
     },
 
+    // Vérification de la regex firstname
 		checkFormFirstname: function () {
       const regexFirstname = /^[a-zA-ZáàâäãåçéèêëíìîïñóòôöõúùûüýÿæœÁÀÂÄÃÅÇÉÈÊËÍÌÎÏÑÓÒÔÖÕÚÙÛÜÝŸÆŒ\-]+$/;
       const checkFirstname = regexFirstname.test(this.firstname);
@@ -194,6 +211,7 @@ export default {
       }
     },
 
+    // Vérification de la regex password
     checkFormPassword: function () {
       const regexPassword = /^(?=.*\d)(?=.*[a-z])(?=.*[A-Z])(?=.*[^a-zA-Z0-9])(?!.*\s).{8,}$/;
       const checkPassword = regexPassword.test(this.password);
@@ -215,6 +233,8 @@ export default {
 				}
 			}  
     },
+
+    // reset du form au switch
     resetForm: function () {
       this.email = '';
       this.lastname = '';
@@ -227,11 +247,13 @@ export default {
 			this.errorPassword = false;
     },
 
+    // switch create
     switchToCreateAccount: function () {
       this.mode = 'create';
       this.resetForm();
     },
     
+    // switch login
     switchToLogin: function () {
       this.mode = 'login';
       this.resetForm();
@@ -437,127 +459,3 @@ export default {
   }
 
 </style>
-
-.card {
-    display: flex;
-    background:white;
-    border-radius: 14px;
-    box-shadow: 0px 0px 20px -10px #000000;
-  }
-
-  .card_main {
-    min-width: 300px;
-    padding: 32px;
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    gap: 40px;
-  }
-
-  .card_aside {
-    padding: 40px;
-    display: flex;
-    flex-direction: column;
-    justify-content: space-around;
-    gap: 32px;
-    background: #ffd6d6;
-    border-top-left-radius: 14px;
-    border-bottom-left-radius: 14px;
-  }
-
-  
-
-  .logo {
-    max-width: 250px;
-  }
-
-  
-
-  .card_main_h1 {
-
-    font-weight: 600;
-    font-size: 32px;
-  }
-
-  .card_main_form {
-    padding-top: 20px;
-  }
-
-  .switch {
-    display: flex;
-    justify-content: center;
-  }
-
-  .btn {
-    border: 1px solid #fd2d01;
-    border-radius: 30px;
-    background-color: #ffd6d6;
-    color: #fd2d01;
-    font-size: 18px;
-    cursor: pointer;
-    margin: 0;
-    padding: 15px 25px;
-  }
-
-  .btn:hover {
-    color: #ffffff;
-    background-color: #fd2d01;
-  }
-
-  .card__action:hover {
-    cursor:pointer;
-  }
-
-  .card_main_form {
-    display: flex;
-    flex-direction: column;
-    padding: 0;
-    gap: 20px;
-  }
-
-  .form-row {
-    display: flex;
-    flex-direction: column;
-    gap: 12px;
-  }
-
-  .form-row__input {
-    padding: 8px;
-    border: none;
-    border-radius: 8px;
-    background:#f2f2f2;
-    font-weight: 500;
-    font-size: 16px;
-    color: black;
-    
-  }
-
-  .form-row__input:focus {
-    background:#ffffff;
-    outline: none;
-    border: 1px #eb7278;
-    box-shadow: 0px 0px 10px 1px #ffd7d7;
-  }
-
-  .form-row__input:hover {
-    background:#ffffff;
-    outline: none;
-    border: 1px #eb7278;
-    box-shadow: 0px 0px 10px 1px #ffd7d7;
-  }
-
-  .card_main_btn {
-    display: flex;
-    justify-content: center;
-  }
-  .btn-red {
-    color: #ffffff;
-    background-color: #fd2d01;
-    margin-top: 10px;
-  }
-
-  .btn-red:hover {
-    color: #fd2d01;
-    background-color: #ffd6d6;
-    margin-top: 10px;
-  }

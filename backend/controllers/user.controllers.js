@@ -261,50 +261,6 @@ exports.editProfile = (req, res, next) => {
 
 
 
-// // controller pour supprimer le compte user
-// exports.deleteAccount = (req, res, next) => {
-
-//     // récupération de l'id dans l'url et transformation en number avec parseInt
-//     const userId = parseInt(req.params.id.split(':')[1]);
-
-//     // on compare l'id avec l'id du token pour autoriser la requête
-//     if (userId !== res.locals.auth.userId) {
-//         res.status(401).json({
-//             error: 'Requête non autorisée!'
-//         });
-//         return
-//     }
-
-//     mysqlConnection.query(
-//         'SELECT * FROM users WHERE id = ?', userId, (error, results, fields) => {
-//             if (error) {
-//                 res.status(400).json({ error })
-//             }
-//             else {
-//                 if (results[0].photo_url !== null) {
-//                     const filename = results[0].photo_url.split('/images/profile/')[1];
-//                     fs.unlink(`images/profile/${filename}`, function (err) {
-//                         if (err) return console.log(err);
-//                         console.log('fichier supprimé avec succès');
-//                     });
-//                 } 
-//             }
-//         }
-//     )
-
-//     mysqlConnection.query(
-//         'DELETE FROM users WHERE id = ?', userId, (error, results, fields) => {
-//         if (error) {
-//             console.log(error);
-//             res.status(400).json({ error })
-//         } else {
-//             (res.status(200).json({ message: 'Utilisateur supprimé de la base de données' }));
-//         }
-//     })
-// }
-
-
-
 // controller admin
 exports.isAdmin = (req, res, next) => {
 
@@ -382,110 +338,7 @@ exports.allUsers = (req, res, next) => {
 
 
 
-// // controller admin pour supprimer un User
-// exports.adminDeleteAccount = (req, res, next) => {
-
-//     // récupération de l'AdminId dans le controller d'authentification (token)
-//     const adminId = res.locals.auth.userId;
-
-//     // récupération de l'UserId à supprimmer
-//     const userIdToDelete = parseInt(req.params.id.split(':')[1]);
-    
-//     // On vérifie si c'est bien un admin
-//     mysqlConnection.query(
-//         'SELECT is_admin From users WHERE id = ?', adminId, (error, results, fields) => {
-//             if (error) {
-//                 console.log(error);
-//                 res.status(400).json({ error })
-//             } else {
-//                 if(results[0].is_admin == 0) {
-//                     res.status(401).json({
-//                         error: 'Vous n\'êtes pas admin!'
-//                     });
-//                     return
-//                 }
-//                 else {
-//                     // On peut supprimer l'user voulu
-//                     mysqlConnection.query(
-//                         'SELECT * FROM users WHERE id = ?', userIdToDelete, (error, results, fields) => {
-//                             if (error) {
-//                                 res.status(400).json({ error })
-//                             }
-//                             else {
-//                                 if (results[0].photo_url !== null) {
-//                                     const filename = results[0].photo_url.split('/images/profile/')[1];
-//                                     fs.unlink(`images/profile/${filename}`, function (err) {
-//                                         if (err) return console.log(err);
-//                                         console.log('fichier supprimé avec succès');
-//                                     });
-//                                 } 
-//                             }
-//                         }
-//                     )
-                
-//                     mysqlConnection.query(
-//                         'DELETE FROM users WHERE id = ?', userIdToDelete, (error, results, fields) => {
-//                         if (error) {
-//                             console.log(error);
-//                             res.status(400).json({ error })
-//                         } else {
-//                             (res.status(200).json({ message: 'Utilisateur supprimé de la base de données' }));
-//                         }
-//                     })
-//                 }
-//             }
-//         }
-//     )
-// };
-
-
-// // controller pour supprimer le compte user
-// exports.deleteAccount = (req, res, next) => {
-
-//     // récupération de l'id dans l'url et transformation en number avec parseInt
-//     const userId = parseInt(req.params.id.split(':')[1]);
-
-//     // on compare l'id avec l'id du token pour autoriser la requête
-//     if (userId !== res.locals.auth.userId) {
-//         res.status(401).json({
-//             error: 'Requête non autorisée!'
-//         });
-//         return
-//     }
-
-//     mysqlConnection.query(
-//         'SELECT * FROM users WHERE id = ?', userId, (error, results, fields) => {
-//             if (error) {
-//                 res.status(400).json({ error })
-//             }
-//             else {
-//                 if (results[0].photo_url !== null) {
-//                     const filename = results[0].photo_url.split('/images/profile/')[1];
-//                     fs.unlink(`images/profile/${filename}`, function (err) {
-//                         if (err) return console.log(err);
-//                         console.log('fichier supprimé avec succès');
-//                     });
-//                 } 
-//             }
-//         }
-//     )
-
-//     mysqlConnection.query(
-//         'DELETE FROM users WHERE id = ?', userId, (error, results, fields) => {
-//         if (error) {
-//             console.log(error);
-//             res.status(400).json({ error })
-//         } else {
-//             (res.status(200).json({ message: 'Utilisateur supprimé de la base de données' }));
-//         }
-//     })
-// }
-
-
-
-
-
-// controller pour supprimer l'image du profil
+// controller pour supprimer un user
 exports.deleteAccount = (req, res, next) => {
 
     console.log("SUPPRESSION USER");
@@ -600,8 +453,6 @@ exports.deleteAccount = (req, res, next) => {
                         }
                     }
                 )
-
-               
             } 
         }
     ) 

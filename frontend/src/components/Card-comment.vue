@@ -1,7 +1,7 @@
 <template>
     <div class="card"> 
-        <div   div v-if="comment.isEditing">
-                <card-edit-comment  v-model="comment" :key="comment.comment_id" :comment="comment"></card-edit-comment>
+        <div v-if="comment.isEditing">
+            <card-edit-comment  v-model="comment" :key="comment.comment_id" :comment="comment"></card-edit-comment>
         </div>
         <div v-else class="comment-card">
             <div class="comment-card_header" :class="{'header-mypost' : comment.myComment}">    
@@ -75,13 +75,13 @@ export default {
 
     methods: {
 
+        // Permet de faire apparaître le composant card-edit-comment
         toEdit: function () {
             return this.comment.isEditing = true;
         },
 
-        addLike: function() {
-                console.log("aaaaaaaaaaa")
-           
+        // Permet d'ajouter ou retirer un like
+        addLike: function() {     
             if(!this.comment.myLike && !this.comment.myDislike) {
                 this.comment.myLike = true;
                 this.comment.likeType = 1; 
@@ -102,8 +102,8 @@ export default {
             return this.sendMyLike();
         },
 
+        // Permet d'ajouter ou retirer un dislike
         addDislike: function() {
-
             if(!this.comment.myDislike && !this.comment.myLike) {
                 this.comment.myDislike = true;
                 this.comment.likeType = -1;
@@ -122,28 +122,23 @@ export default {
                 this.comment.likeType = 0;
                 this.comment.likeCount++;            
             }
-             
             return this.sendMyLike();
         },
 
+        // Envoie du like/dislike dans le backend
         sendMyLike: function () {
-            console.log("hop")
-            console.log(this.comment.likeType); 
             // récupération de l'id et du token dans le localstorage
             let user = localStorage.getItem("user");
             user = JSON.parse(user);
             const token = user.token;
             const self = this;
             
-            // récupération des informations du profil
+            // récupération des informations du like
             const dataLike = {
                 userId: user.userId,
                 commentId: self.comment.commentId,
                 type: self.comment.likeType,
             };
-            console.log(dataLike);
-
-
 
             instance.post("/like/comment", dataLike, {headers: { 'Authorization': `Bearer ${token}`},
                 }).then(function (response) {
@@ -153,9 +148,6 @@ export default {
                 });
         },
     },
-
-
-
 }
 
 </script>
@@ -167,10 +159,8 @@ export default {
     .comment-card {
         display: flex;
         flex-direction: column;
-        
         border-radius: 15px;
         background-color: $color-white;
-
 
         &_header {
             display: flex;
@@ -178,9 +168,7 @@ export default {
             gap: $space-XXXsmall;
             padding: $space-XXsmall;
             
-
             .profil {
-
                 min-width: 50px;
                 height: 50px;
                 border-radius: 50%;
@@ -194,6 +182,7 @@ export default {
                     border-radius: 100%;
                 }
             }
+
             .divers {
                 display: flex;
                 justify-content: space-between;
@@ -203,9 +192,9 @@ export default {
                 &_info {
                     &_title {
                         font-size: $font-large;
-                        font-weight: 600;
-                    
+                        font-weight: 600;                 
                     }
+
                     &_body {
                         font-size: $font-small;
                         font-weight: 400;
@@ -215,20 +204,22 @@ export default {
                         .moderate {
                             font-weight: 500;
                             color: $color-primary;
-                        }
-                        
+                        } 
                     }
                 }
+
                 &_edit {
                     min-width: 50px;
                     display: flex;
                 }
             } 
         }
+
         .header-mypost {
                 background-color: $color-secondary;
                 border-radius:  15px 15px 0 0 ;
             }
+
         &_body{
             display: flex;
             flex-direction: column;
@@ -240,6 +231,7 @@ export default {
                 justify-content: center;
                 width: 100%;
                 max-height: 400px;
+
                 >img {
                     max-width: 100%;
                     max-height: 100%;
@@ -250,6 +242,7 @@ export default {
                 }
             }
         }
+
         &_footer{
             font-size: $font-small;
             font-weight: 400;
@@ -267,9 +260,7 @@ export default {
             padding: $space-XXsmall;
             border-top: 3px solid $color-grey-light;
           
-
             .like {
-
                 display: flex;
                 align-items: center;
                 justify-content: center;
@@ -277,13 +268,12 @@ export default {
                 
 
                 &_btn {
-                    display: flex;
+                display: flex;
                 align-items: center;
                 justify-content: center;
                 width: 50px;
                 cursor: pointer;          
-                    
-        
+                            
                     &_up {
                         width: 100%;
                         height: 100%;
@@ -296,6 +286,7 @@ export default {
                     }
                 }
             }
+
             .comment {
                 display: flex;
                 align-items: center;
