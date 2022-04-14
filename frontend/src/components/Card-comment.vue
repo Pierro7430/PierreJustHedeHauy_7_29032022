@@ -1,65 +1,56 @@
 <template>
-    <div :id="post.postId" class="card">
-        <div v-if="post.isEditing">
-                <card-edit-post  v-model="post" :key="post.postId" :post="post"></card-edit-post>
+    <div class="card"> 
+        <div   div v-if="comment.isEditing">
+                <card-edit-comment  v-model="comment" :key="comment.comment_id" :comment="comment"></card-edit-comment>
         </div>
-        <div v-else class="post-card">
-            <div class="post-card_header" :class="{'header-mypost' : post.myPost}">    
+        <div v-else class="comment-card">
+            <div class="comment-card_header" :class="{'header-mypost' : comment.myComment}">    
                 <div class="profil">
-                    <img v-if="post.urlAvatar" class="profil_img" :src="post.urlAvatar" alt="Image avatar" />
+                    <img v-if="comment.urlAvatar" class="profil_img" :src="comment.urlAvatar" alt="Image avatar" />
                 </div>
                 <div class="divers">
                     <div class="divers_info">
-                        <h2 class="divers_info_title" > {{ post.title }} </h2>
+                        <h2 class="divers_info_title" > {{ comment.title }} </h2>
                         <div class="divers_info_body">
-                            <p>Posté par <span>{{ post.fullname }}</span></p>
+                            <p>Posté par <span>{{ comment.fullname }}</span></p>
                         </div> 
                     </div>
                    
-                    <div v-if="post.myPost || this.$parent.isAdmin" @click="toEdit()" class="divers_edit">
+                    <div v-if="comment.myComment || this.$parent.isAdmin" @click="toEdit()" class="divers_edit">
                         <img class="edit-icon" src="../images/icones/edit-red.svg" alt="Edit profil" />
                     </div>
                 </div>
             </div>
 
-            <div class="post-card_body">
-                <p v-if="post.description"> {{ post.description }} </p>
-                <div v-if="post.urlImg" class="post-card_body_img">
-                    <img :src="post.urlImg" alt="">
+            <div class="comment-card_body">
+                <p v-if="comment.description"> {{ comment.description }} </p>
+                <div v-if="comment.urlImg" class="comment-card_body_img">
+                    <img :src="comment.urlImg" alt="">
                 </div> 
             </div>
-            <div class="post-card_footer">
-                <p v-if="post.updated == 0" > Posté le <span>{{ post.dateCreated }}</span> <br></p>
-                <p v-else>  Mis à jour le <span>{{ post.dateUpdated }}</span></p>
+            <div class="comment-card_footer">
+                <p v-if="comment.updated == 0" > Posté le <span>{{ comment.dateCreated }}</span> <br></p>
+                <p v-else>  Mis à jour le <span>{{ comment.dateUpdated }}</span></p>
             </div>
-            <div class="post-card_btns">
+            <div class="comment-card_btns">
                 <div class="like">
                     <div @click="addLike" class="like_btn">
-                        <img  v-if="post.myLike === true" class="like_btn_up" src="../images/icones/left-arrow-red.svg" alt="Icone like">
+                        <img  v-if="comment.myLike === true" class="like_btn_up" src="../images/icones/left-arrow-red.svg" alt="Icone like">
                         <img  v-else class="like_btn_up" src="../images/icones/left-arrow-black.svg" alt="Icone like">
                     </div>
-                    <p v-if="!post.likeCount" class="like_compt">0</p>
-                    <p v-else class="like_compt">{{ post.likeCount }}</p>
+                    <p v-if="!comment.likeCount" class="like_compt">0</p>
+                    <p v-else class="like_compt">{{ comment.likeCount }}</p>
                     <div @click="addDislike" class="like_btn">
-                        <img v-if="post.myDislike === true"  class="like_btn_down" src="../images/icones/left-arrow-red.svg" alt="Icone dislike">
+                        <img v-if="comment.myDislike === true"  class="like_btn_down" src="../images/icones/left-arrow-red.svg" alt="Icone dislike">
                         <img v-else  class="like_btn_down" src="../images/icones/left-arrow-black.svg" alt="Icone dislike">
                     </div>
                 </div>
-                <div class="comment">
-                    <a :href="post.url" class="comment_btn">
-                        <img  v-if="post.myComment === true" src="../images/icones/comment-red.svg" alt="Icone commentaire">
-                        <img  v-else src="../images/icones/comment-black.svg" alt="Icone commentaire">
-                    </a>
-                    <p v-if="!post.commentCount" class="comment_compt">0</p>
-                    <p v-else class="comment_compt">{{ post.commentCount }}</p>
-                    
-                    
-                </div>
+
             </div>
-        </div>
-            
         
+        </div>
     </div>
+        
     
 </template>
 
@@ -70,13 +61,13 @@ import axios from "axios";
         baseURL: "http://127.0.0.1:3000/api/auth/",
     });
 
-import CardEditPost from './Card-edit-post.vue';
+import CardEditComment from "./Card-edit-comment.vue";
 
 export default {
-    components: { CardEditPost },
-    name: 'Card-post',
+    components: { CardEditComment },
+    name: 'Card-comment',
     props: {
-        post : {
+        comment : {
             type: Object,
             required: true
         }
@@ -85,58 +76,59 @@ export default {
     methods: {
 
         toEdit: function () {
-            return this.post.isEditing = true;
+            return this.comment.isEditing = true;
         },
 
         addLike: function() {
-
+                console.log("aaaaaaaaaaa")
            
-            if(!this.post.myLike && !this.post.myDislike) {
-                this.post.myLike = true;
-                this.post.likeType = 1;
-                this.post.likeCount++;
+            if(!this.comment.myLike && !this.comment.myDislike) {
+                this.comment.myLike = true;
+                this.comment.likeType = 1; 
+                this.comment.likeCount++;
             }
-            else if(!this.post.myLike && this.post.myDislike) {
-                this.post.myLike = true;
-                this.post.myDislike = false;
-                this.post.likeType = 1;
-                this.post.likeCount+= 2;
+            else if(!this.comment.myLike && this.comment.myDislike) {
+                this.comment.myLike = true;
+                this.comment.myDislike = false;
+                this.comment.likeType = 1;
+                this.comment.likeCount+= 2;
             }
             else{
-                this.post.myLike = false;
-                this.post.myDislike = false;
-                this.post.likeType = 0;
-                this.post.likeCount--;
+                this.comment.myLike = false;
+                this.comment.myDislike = false;
+                this.comment.likeType = 0;
+                this.comment.likeCount--;
             }
             return this.sendMyLike();
         },
 
         addDislike: function() {
 
-            if(!this.post.myDislike && !this.post.myLike) {
-                this.post.myDislike = true;
-                this.post.likeType = -1;
-                this.post.likeCount--;
+            if(!this.comment.myDislike && !this.comment.myLike) {
+                this.comment.myDislike = true;
+                this.comment.likeType = -1;
+                this.comment.likeCount--;
                 
             }
-            else if(!this.post.myDislike && this.post.myLike) {          
-                this.post.myDislike = true;
-                this.post.myLike = false;
-                this.post.likeType = -1;
-                this.post.likeCount+= -2;
+            else if(!this.comment.myDislike && this.comment.myLike) {          
+                this.comment.myDislike = true;
+                this.comment.myLike = false;
+                this.comment.likeType = -1;
+                this.comment.likeCount+= -2;
             }
             else{
-                this.post.myDislike = false;
-                this.post.myLike = false; 
-                this.post.likeType = 0;
-                this.post.likeCount++;             
-            }          
+                this.comment.myDislike = false;
+                this.comment.myLike = false; 
+                this.comment.likeType = 0;
+                this.comment.likeCount++;            
+            }
+             
             return this.sendMyLike();
         },
 
         sendMyLike: function () {
             console.log("hop")
-            console.log(this.post.likeType); 
+            console.log(this.comment.likeType); 
             // récupération de l'id et du token dans le localstorage
             let user = localStorage.getItem("user");
             user = JSON.parse(user);
@@ -146,14 +138,14 @@ export default {
             // récupération des informations du profil
             const dataLike = {
                 userId: user.userId,
-                postId: self.post.postId,
-                type: self.post.likeType,
+                commentId: self.comment.commentId,
+                type: self.comment.likeType,
             };
             console.log(dataLike);
 
 
 
-            instance.post("/like/post", dataLike, {headers: { 'Authorization': `Bearer ${token}`},
+            instance.post("/like/comment", dataLike, {headers: { 'Authorization': `Bearer ${token}`},
                 }).then(function (response) {
                    console.log(response);
                 }).catch(function (error) {
@@ -161,9 +153,6 @@ export default {
                 });
         },
     },
-
-
-    
 
 
 
@@ -175,7 +164,7 @@ export default {
 
 @import '../assets/scss/scss';
 
-    .post-card {
+    .comment-card {
         display: flex;
         flex-direction: column;
         
@@ -188,8 +177,6 @@ export default {
             align-items: center;
             gap: $space-XXXsmall;
             padding: $space-XXsmall;
-
-            
             
 
             .profil {
@@ -236,18 +223,18 @@ export default {
                     min-width: 50px;
                     display: flex;
                 }
-            }
-            
-            
+            } 
         }
-
         .header-mypost {
                 background-color: $color-secondary;
                 border-radius:  15px 15px 0 0 ;
             }
-
         &_body{
+            display: flex;
+            flex-direction: column;
+            gap: $space-small;;
             padding: $space-XXsmall;
+
             &_img {
                 display: flex;
                 justify-content: center;

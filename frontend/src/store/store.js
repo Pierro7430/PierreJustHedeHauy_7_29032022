@@ -98,21 +98,6 @@ const store = createStore({
             });
         },
 
-        // getUserInfos: ({commit}) => {
-            
-        //     let user = localStorage.getItem('user');
-        //     user = JSON.parse(user);
-        //     const token = user.token;
-        //     console.log(token);
-        //     instance.get('/profile/:' + user.userId, { headers: {"Authorization" : `Bearer ${token}`} })
-        //     .then(function (response) {
-        //         console.log(response.data.results[0]);
-        //         commit('userInfos', response.data.results[0]); 
-        //     })
-            
-        //     .catch(function () {
-        //     });
-        // }
     }
 })
 export default store;

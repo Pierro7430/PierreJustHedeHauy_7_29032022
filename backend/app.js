@@ -23,8 +23,11 @@ app.use('/images', express.static(path.join(__dirname, 'images')));
 
 // importation des routes
 const userRoutes = require('./routes/user.routes');
+const postRoutes = require('./routes/post.routes');
+const commentRoutes = require('./routes/comment.routes');
+const likeRoutes = require('./routes/like.routes');
 
 // route d'authentification
-app.use('/api/auth', userRoutes);
+app.use('/api/auth', userRoutes, postRoutes, commentRoutes, likeRoutes);
 
 module.exports = app;

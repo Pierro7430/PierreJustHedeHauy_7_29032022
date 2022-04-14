@@ -1,23 +1,15 @@
 // importation de bcrypt pour chiffrer le password
 const bcrypt = require('bcrypt');
-
 // importation de cryptojs pour chiffrer les infos de users (mail, nom, prénom, etc...)
 const isemail = require('isemail');
-
 // importation de jsonwebtoken pour créer un token unique à la connexion
 const jwt = require('jsonwebtoken');
-const { createPool } = require('mysql2');
-
 // importation de mysqlconnection pour se connecter à la base de donnée
 const mysqlConnection = require('../db.mysql')
-
+// importation de fs pour gérer les images
+const fs = require('fs');
 // importation du model User
 const User = require('../models/User.model');
-
-const UserService = require('../services/user.services');
-
-const fs = require('fs');
-
 
 
 
@@ -34,55 +26,78 @@ exports.signup = (req, res, next) => {
         return res.status(400).json({ error: 'Tous les champs sont obligatoires !' })
     }
 
-    // importation de la classe User
-    const user = new User(req.body.email, req.body.lastname, req.body.firstname, req.body.password);
-
+    // Déclaration de la variable qui va stocker le booléeen pour savoir si le compte est admin ou non
+    let isAdmin;
+    
     mysqlConnection.query(
-        'SELECT * FROM user WHERE email = ?', req.body.email, (error, results, fields) => {
-
+        'SELECT * FROM users', (error, results, fields) => {
             if (error) {
                 console.log(error);
                 res.status(400).json({ error })
             }
+
             else {
-                // si le mail n'existe pas dans la base de donnée
-                if (results.length !== 0) {
-                    return res.status(401).json({ error: 'Mail déjà utilisé !' })
+                // Si c'est le premier compte créé de la table Users, alors le compte est admin
+                if (!results.length) {
+                    isAdmin = 1;
                 }
-
-                // cryptage du password
-                bcrypt.hash(req.body.password, 10)
-
-                    .then(hash => {
-
-                        // importation de la classe User
-                        const dataUser = {
-                            email: req.body.email,
-                            lastname: req.body.lastname,
-                            firstname: req.body.firstname,
-                            password: hash,
+                else {
+                    isAdmin = 0;
+                }
+                console.log(isAdmin);
+             
+                mysqlConnection.query(
+                    'SELECT * FROM users WHERE email = ?', req.body.email, (error, results, fields) => {
+            
+                        if (error) {
+                            console.log(error);
+                            res.status(400).json({ error })
                         }
-
-                        // on insert le nouveau user (email, mdp) dans la base de données
-                        mysqlConnection.query(
-                            'INSERT INTO user SET ?', dataUser, (error, results, fields) => {
-
-                                if (error) {
-                                    console.log(error);
-                                    res.status(400).json({ error })
-                                }
-
-                                else {
-                                    res.status(201).json({ message: 'Utilisateur créé !' })
-                                }
+                        else {
+                            // si le mail n'existe pas dans la base de donnée
+                            if (results.length !== 0) {
+                                return res.status(401).json({ error: 'Mail déjà utilisé !' })
                             }
-                        )
-                    })
-                    .catch(error => res.status(500).json({ error }));
+            
+                            // cryptage du password
+                            bcrypt.hash(req.body.password, 10)
+            
+                                .then(hash => {
+            
+                                    // importation de la classe User
+                                    const dataUser = {
+                                        email: req.body.email,
+                                        lastname: req.body.lastname,
+                                        firstname: req.body.firstname,
+                                        password: hash,
+                                        is_admin : isAdmin,
+                                    }
+            
+                                    // on insert le nouveau user (email, mdp) dans la base de données
+                                    mysqlConnection.query(
+                                        'INSERT INTO users SET ?', dataUser, (error, results, fields) => {
+            
+                                            if (error) {
+                                                console.log(error);
+                                                res.status(400).json({ error })
+                                            }
+            
+                                            else {
+                                                res.status(201).json({ message: 'Utilisateur créé !' })
+                                            }
+                                        }
+                                    )
+                                })
+                                .catch(error => res.status(500).json({ error }));
+                        }
+                    }
+                )
             }
         }
-    )
+    ) 
 };
+
+
 
 // controller login
 exports.login = (req, res, next) => {
@@ -92,7 +107,7 @@ exports.login = (req, res, next) => {
 
     // selection du tableau user contenant le mail
     mysqlConnection.query(
-        'SELECT * FROM user WHERE email = ?', req.body.email, (error, results, fields) => {
+        'SELECT * FROM users WHERE email = ?', req.body.email, (error, results, fields) => {
             if (error) {
                 res.status(400).json({ error })
             } else {
@@ -117,7 +132,6 @@ exports.login = (req, res, next) => {
                         });
                     })
                     .catch(error => res.status(500).json({ error }));
-
             }
         }
     )
@@ -125,15 +139,15 @@ exports.login = (req, res, next) => {
 
 
 
-
 // controller profile
 exports.profile = (req, res, next) => {
 
     // récupération de l'id dans l'url et transformation en number avec parseInt
-    const id = parseInt(req.params.id.split(':')[1]);
+    const userId = parseInt(req.params.id.split(':')[1]);
 
     // on compare l'id avec l'id du token pour autoriser la requête
-    if (id !== res.locals.auth.userId) {
+    if (userId !== res.locals.auth.userId) {
+
         res.status(401).json({
             error: 'Requête non autorisée!'
         });
@@ -142,24 +156,26 @@ exports.profile = (req, res, next) => {
 
     // lancement de la requête pour afficher les informations du profil
     mysqlConnection.query(
-        'SELECT lastname, firstname, signup_date, location, birth_date, photo_url FROM user WHERE id = ?', id, (error, results, fields) => {
+        'SELECT lastname, firstname, signup_date, location, birth_date, photo_url FROM users WHERE id = ?', userId, (error, results, fields) => {
             if (error) {
                 res.status(400).json({ error })
             } else {
-                (res.status(200).json({ results }))
-                    ;
+                (res.status(200).json({ results }));
             }
-        })
+        }
+    )
 };
+
+
 
 // controller pour modifier le profil
 exports.editProfile = (req, res, next) => {
 
     // récupération de l'id dans l'url et transformation en number avec parseInt
-    const id = parseInt(req.params.id.split(':')[1]);
+    const userId = parseInt(req.params.id.split(':')[1]);
 
     // on compare l'id avec l'id du token pour autoriser la requête
-    if (id !== res.locals.auth.userId) {
+    if (userId !== res.locals.auth.userId) {
 
         res.status(401).json({
             error: 'Requête non autorisée!'
@@ -167,21 +183,40 @@ exports.editProfile = (req, res, next) => {
         return
     }
 
-
     // déclaration de la variable qui va récupérer les modifications du profil dans le body
-    let userInfo;
+    let userInfo = JSON.parse(req.body.userProfile);
 
-    if (req.file) {
+    if (!req.file && !userInfo.photo_url) {
 
         mysqlConnection.query(
-            'SELECT photo_url FROM user WHERE id = ?', id, (error, results, fields) => {
+            'SELECT photo_url FROM users WHERE id = ?', userId, (error, results, fields) => {
                 if (error) {
                     res.status(400).json({ error })
                 }
                 else {
                     if (results[0].photo_url !== null) {
-                        const filename = results[0].photo_url.split('/images/')[1];
-                        fs.unlink(`images/${filename}`, function (err) {
+                        const filename = results[0].photo_url.split('/images/profile/')[1];
+                        fs.unlink(`images/profile/${filename}`, function (err) {
+                            if (err) return console.log(err);
+                            console.log('fichier supprimé avec succès');
+                        });
+                    } 
+                } 
+            }
+        )
+    }
+
+    if (req.file) {
+
+        mysqlConnection.query(
+            'SELECT photo_url FROM users WHERE id = ?', userId, (error, results, fields) => {
+                if (error) {
+                    res.status(400).json({ error })
+                }
+                else {
+                    if (results[0].photo_url !== null) {
+                        const filename = results[0].photo_url.split('/images/profile/')[1];
+                        fs.unlink(`images/profile/${filename}`, function (err) {
                             if (err) return console.log(err);
                             console.log('fichier supprimé avec succès');
                         });
@@ -192,43 +227,26 @@ exports.editProfile = (req, res, next) => {
             }
         )
 
-        userInfo = {
-            photo_url: `${req.protocol}://${req.get('host')}/images/${req.file.filename}`
-        }
+        userInfo.photo_url = `${req.protocol}://${req.get('host')}/images/profile/${req.file.filename}`;
 
-        console.log(userInfo);
-    }
-    else {
-        console.log('sans image');
-        userInfo = req.body;
-        console.log(userInfo);
     }
 
-    const { lastname, firstname, location, birth_date, photo_url } = userInfo;
+    if (!userInfo.birth_date) {
+        userInfo.birth_date = null;
+    }
 
-    // déclaration de la variable qui va contenir la reqête sql
-    const querySql = req.file
-        ?
+    const querySql = 
         `
-            UPDATE user SET
-            photo_url = ?
-            WHERE id = ?
-            `
-        :
-        `
-            UPDATE user SET 
+            UPDATE users SET 
             lastname = ?,
             firstname = ?,
             location = ?,
-            birth_date = ?
+            birth_date = ?,
+            photo_url = ?
             WHERE id = ?
-            `
-        ;
+        `;
 
-    const values = req.file
-        ? [photo_url, id]
-        : [lastname, firstname, location, birth_date, id]
-
+    const values = [userInfo.lastname, userInfo.firstname, userInfo.location, userInfo.birth_date, userInfo.photo_url, userId]
 
     // lancement de la requête pour afficher les informations du profil
     mysqlConnection.query(querySql, values, (error, results, fields) => {
@@ -236,105 +254,355 @@ exports.editProfile = (req, res, next) => {
             console.log(error);
             res.status(400).json({ error })
         } else {
-            (res.status(201).json({ message: 'Profil mis à jour !' }))
-
+            (res.status(201).json({ message: 'Profil mis à jour !' }));
         }
     })
 };
 
 
 
-// controller pour supprimer l'image du profil
-exports.removeImg = (req, res, next) => {
+// // controller pour supprimer le compte user
+// exports.deleteAccount = (req, res, next) => {
+
+//     // récupération de l'id dans l'url et transformation en number avec parseInt
+//     const userId = parseInt(req.params.id.split(':')[1]);
+
+//     // on compare l'id avec l'id du token pour autoriser la requête
+//     if (userId !== res.locals.auth.userId) {
+//         res.status(401).json({
+//             error: 'Requête non autorisée!'
+//         });
+//         return
+//     }
+
+//     mysqlConnection.query(
+//         'SELECT * FROM users WHERE id = ?', userId, (error, results, fields) => {
+//             if (error) {
+//                 res.status(400).json({ error })
+//             }
+//             else {
+//                 if (results[0].photo_url !== null) {
+//                     const filename = results[0].photo_url.split('/images/profile/')[1];
+//                     fs.unlink(`images/profile/${filename}`, function (err) {
+//                         if (err) return console.log(err);
+//                         console.log('fichier supprimé avec succès');
+//                     });
+//                 } 
+//             }
+//         }
+//     )
+
+//     mysqlConnection.query(
+//         'DELETE FROM users WHERE id = ?', userId, (error, results, fields) => {
+//         if (error) {
+//             console.log(error);
+//             res.status(400).json({ error })
+//         } else {
+//             (res.status(200).json({ message: 'Utilisateur supprimé de la base de données' }));
+//         }
+//     })
+// }
+
+
+
+// controller admin
+exports.isAdmin = (req, res, next) => {
 
     // récupération de l'id dans l'url et transformation en number avec parseInt
-    const id = parseInt(req.params.id.split(':')[1]);
+    const userId = parseInt(req.params.id.split(':')[1]);
 
     // on compare l'id avec l'id du token pour autoriser la requête
-    if (id !== res.locals.auth.userId) {
+    if (userId !== res.locals.auth.userId) {
+        res.status(401).json({
+            error: 'Requête non autorisée!'
+        });
+        return
+    }
+    
+    // lancement de la requête pour afficher les informations du profil
+    mysqlConnection.query(
+        'SELECT is_admin From users WHERE id = ?', userId, (error, results, fields) => {
+            if (error) {
+                console.log(error);
+                res.status(400).json({ error })
+            } else {
+                (res.status(200).json({ results }));
+            }
+        }
+    )
+};
+
+
+
+// controller pour récupérer tous les users
+exports.allUsers = (req, res, next) => {
+
+    // récupération de l'id dans l'url et transformation en number avec parseInt
+    const userId = parseInt(req.params.id.split(':')[1]);
+
+    // on compare l'id avec l'id du token pour autoriser la requête
+    if (userId !== res.locals.auth.userId) {
 
         res.status(401).json({
             error: 'Requête non autorisée!'
         });
         return
     }
-
+    
+    // lancement de la requête pour afficher les informations du profil
     mysqlConnection.query(
-        'SELECT photo_url FROM user WHERE id = ?', id, (error, results, fields) => {
-            if (error) {
-                res.status(400).json({ error })
-            }
-            else {
-                if (results[0].photo_url !== null) {
-                    const filename = results[0].photo_url.split('/images/')[1];
-                    fs.unlink(`images/${filename}`, function (err) {
-                        if (err) return console.log(err);
-                        console.log('fichier supprimé avec succès');
-                    });
-                } 
-            } 
-        }
-    )
-
-    const photo_url = null;
-    const values = [photo_url, id];
-
-        mysqlConnection.query(
-            'UPDATE user SET photo_url = ? WHERE id = ?', values, (error, results, fields) => {
+        'SELECT is_admin From users WHERE id = ?', userId, (error, results, fields) => {
             if (error) {
                 console.log(error);
                 res.status(400).json({ error })
             } else {
-                (res.status(200).json({ message: 'Photo supprimé mis à jour !' }))
-    
+                if(results[0].is_admin == 0) {
+                    res.status(401).json({
+                        error: 'Vous n\'êtes pas admin!'
+                    });
+                    return
+                } 
+                else {
+                    // lancement de la requête pour afficher les informations du profil
+                    mysqlConnection.query(
+                        'SELECT * From users', (error, results, fields) => {
+                            if (error) {
+                                console.log(error);
+                                res.status(400).json({ error })
+                            } else {
+                                (res.status(200).json({ results }));
+                            }
+                        }
+                    )
+                } 
             }
-        })
-}
+        }
+    )
+};
+
+
+
+// // controller admin pour supprimer un User
+// exports.adminDeleteAccount = (req, res, next) => {
+
+//     // récupération de l'AdminId dans le controller d'authentification (token)
+//     const adminId = res.locals.auth.userId;
+
+//     // récupération de l'UserId à supprimmer
+//     const userIdToDelete = parseInt(req.params.id.split(':')[1]);
+    
+//     // On vérifie si c'est bien un admin
+//     mysqlConnection.query(
+//         'SELECT is_admin From users WHERE id = ?', adminId, (error, results, fields) => {
+//             if (error) {
+//                 console.log(error);
+//                 res.status(400).json({ error })
+//             } else {
+//                 if(results[0].is_admin == 0) {
+//                     res.status(401).json({
+//                         error: 'Vous n\'êtes pas admin!'
+//                     });
+//                     return
+//                 }
+//                 else {
+//                     // On peut supprimer l'user voulu
+//                     mysqlConnection.query(
+//                         'SELECT * FROM users WHERE id = ?', userIdToDelete, (error, results, fields) => {
+//                             if (error) {
+//                                 res.status(400).json({ error })
+//                             }
+//                             else {
+//                                 if (results[0].photo_url !== null) {
+//                                     const filename = results[0].photo_url.split('/images/profile/')[1];
+//                                     fs.unlink(`images/profile/${filename}`, function (err) {
+//                                         if (err) return console.log(err);
+//                                         console.log('fichier supprimé avec succès');
+//                                     });
+//                                 } 
+//                             }
+//                         }
+//                     )
+                
+//                     mysqlConnection.query(
+//                         'DELETE FROM users WHERE id = ?', userIdToDelete, (error, results, fields) => {
+//                         if (error) {
+//                             console.log(error);
+//                             res.status(400).json({ error })
+//                         } else {
+//                             (res.status(200).json({ message: 'Utilisateur supprimé de la base de données' }));
+//                         }
+//                     })
+//                 }
+//             }
+//         }
+//     )
+// };
+
+
+// // controller pour supprimer le compte user
+// exports.deleteAccount = (req, res, next) => {
+
+//     // récupération de l'id dans l'url et transformation en number avec parseInt
+//     const userId = parseInt(req.params.id.split(':')[1]);
+
+//     // on compare l'id avec l'id du token pour autoriser la requête
+//     if (userId !== res.locals.auth.userId) {
+//         res.status(401).json({
+//             error: 'Requête non autorisée!'
+//         });
+//         return
+//     }
+
+//     mysqlConnection.query(
+//         'SELECT * FROM users WHERE id = ?', userId, (error, results, fields) => {
+//             if (error) {
+//                 res.status(400).json({ error })
+//             }
+//             else {
+//                 if (results[0].photo_url !== null) {
+//                     const filename = results[0].photo_url.split('/images/profile/')[1];
+//                     fs.unlink(`images/profile/${filename}`, function (err) {
+//                         if (err) return console.log(err);
+//                         console.log('fichier supprimé avec succès');
+//                     });
+//                 } 
+//             }
+//         }
+//     )
+
+//     mysqlConnection.query(
+//         'DELETE FROM users WHERE id = ?', userId, (error, results, fields) => {
+//         if (error) {
+//             console.log(error);
+//             res.status(400).json({ error })
+//         } else {
+//             (res.status(200).json({ message: 'Utilisateur supprimé de la base de données' }));
+//         }
+//     })
+// }
+
 
 
 
 
 // controller pour supprimer l'image du profil
 exports.deleteAccount = (req, res, next) => {
-    console.log('coucou')
 
-    // récupération de l'id dans l'url et transformation en number avec parseInt
-    const id = parseInt(req.params.id.split(':')[1]);
+    console.log("SUPPRESSION USER");
 
-    // on compare l'id avec l'id du token pour autoriser la requête
-    if (id !== res.locals.auth.userId) {
+    // récupération de l'AdminId dans le controller d'authentification (token)
+    const adminId = res.locals.auth.userId;
 
-        res.status(401).json({
-            error: 'Requête non autorisée!'
-        });
-        return
-    }
+    // récupération de l'UserId à supprimmer
+    const userIdToDelete = parseInt(req.params.id.split(':')[1]);
 
-    mysqlConnection.query(
-        'SELECT * FROM user WHERE id = ?', id, (error, results, fields) => {
+    // on regarde dans la base de donnée si on est admin
+    mysqlConnection.query(   
+        'SELECT is_admin From users WHERE id = ?', adminId, (error, results, fields) => {
             if (error) {
+                console.log(error);
                 res.status(400).json({ error })
-            }
+            } 
             else {
-                if (results[0].photo_url !== null) {
-                    const filename = results[0].photo_url.split('/images/')[1];
-                    fs.unlink(`images/${filename}`, function (err) {
-                        if (err) return console.log(err);
-                        console.log('fichier supprimé avec succès');
+                const isAdmin = results[0].is_admin;
+
+                // on compare l'id avec l'id du token pour autoriser la requête
+                if (userIdToDelete !== res.locals.auth.userId && isAdmin == 0) {
+                    res.status(401).json({
+                        error: 'Requête non autorisée!'
                     });
-                } 
-            }
-        }
-    )
+                    return
+                }
 
-    mysqlConnection.query(
-        'DELETE FROM user WHERE id = ?', id, (error, results, fields) => {
-        if (error) {
-            console.log(error);
-            res.status(400).json({ error })
-        } else {
-            (res.status(200).json({ message: 'Utilisateur supprimé de la base de données' }))
+                mysqlConnection.query(
+                    'SELECT * FROM users WHERE id = ?', userIdToDelete, (error, results, fields) => {
+                        if (error) {
+                            res.status(400).json({ error })
+                        }
+                        else {
+                            if (results[0].photo_url !== null) {
+                                const filename = results[0].photo_url.split('/images/profile/')[1];
+                                fs.unlink(`images/profile/${filename}`, function (err) {
+                                    if (err) return console.log(err);
+                                    console.log('fichier supprimé avec succès');
+                                });
+                            } 
+                        }
+                    }
+                )
 
+                mysqlConnection.query(
+                    'SELECT comment_imgUrl FROM comments WHERE comment_creator = ?', userIdToDelete, (error, results, fields) => {
+                        if (error) {
+                            res.status(400).json({ error })
+                        }
+                        else {
+                            results.forEach(element => {
+                                if(element.comment_imgUrl !== null) {
+                                    const filename = element.comment_imgUrl.split('/images/post/')[1];
+                                    fs.unlink(`images/post/${filename}`, function (err) {
+                                    if (err) return console.log(err);
+                                        console.log('fichier supprimé avec succès');
+                                    });
+                                }
+                            })
+
+                            mysqlConnection.query(
+                                'SELECT post_Id, post_imgUrl FROM posts WHERE post_creator = ?', userIdToDelete, (error, results, fields) => {
+                                    if (error) {
+                                        res.status(400).json({ error })
+                                    }
+                                    else {
+                                        results.forEach(element => {
+                                            if(element.post_imgUrl !== null) {
+                                                const filename = element.post_imgUrl.split('/images/post/')[1];
+                                                fs.unlink(`images/post/${filename}`, function (err) {
+                                                if (err) return console.log(err);
+                                                    console.log('fichier supprimé avec succès');
+                                                });
+                                            }
+                                            if(element.post_Id !== null) {
+                                                let postId = element.post_Id;
+                                                mysqlConnection.query(
+                                                    'SELECT comment_imgUrl FROM comments WHERE comment_postId = ?', postId, (error, results, fields) => {
+                                                        if (error) {
+                                                            res.status(400).json({ error })
+                                                        }
+                                                        else {
+                                                            results.forEach(element => {
+                                                                if(element.comment_imgUrl !== null) {
+                                                                    const filename = element.comment_imgUrl.split('/images/post/')[1];
+                                                                    fs.unlink(`images/post/${filename}`, function (err) {
+                                                                    if (err) return console.log(err);
+                                                                        console.log('fichier supprimé avec succès');
+                                                                    });
+                                                                }
+                                                            })
+                                                        }
+                                                    }
+                                                )
+                                            }                      
+                                        })
+
+                                        mysqlConnection.query(
+                                            'DELETE FROM users WHERE id = ?', userIdToDelete, (error, results, fields) => {
+                                            if (error) {
+                                                console.log(error);
+                                                res.status(400).json({ error })
+                                            } else {
+                                                console.log("SUPPRESSION USER OK !");
+                                                (res.status(200).json({ message: 'Utilisateur supprimé de la base de données' }));
+                                            }
+                                        })
+                                    }
+                                }
+                            ) 
+                        }
+                    }
+                )
+
+               
+            } 
         }
-    })
+    ) 
 }

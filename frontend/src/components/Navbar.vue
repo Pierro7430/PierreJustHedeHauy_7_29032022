@@ -18,13 +18,17 @@
         <nav v-if="menuOpen" class="menu">
             <ul class="menu_list">
                 <li>
-                    <a class="menu_list_btn" href="/Profile" title="Mon profil">Mon profil</a>
+                    <a class="menu_list_btn" href="/Home" title="Accueil">Accueil</a>
                 </li>
                 <hr class="menu_list_line" />
                 <li>
-                    <a class="menu_list_btn" href="/Profile" title="Mon profil">Modifier mon profil</a>
+                    <a class="menu_list_btn" href="/Profile" title="Mon profil">Mon profil</a>
                 </li>
                 <hr class="menu_list_line" />
+                <li v-if="isAdmin">
+                    <a  class="menu_list_btn" href="/Users" title="Gérer les utilisateurs">Gérer les utilisateurs</a>
+                </li>
+                <hr v-if="isAdmin" class="menu_list_line" />
                 <li @click="logout()" class="menu_list_btn">Me déconnecter</li>
             </ul>
             <div @click="checkMenu()" class="menu_opacity"></div>
@@ -45,6 +49,7 @@ export default {
             mode: "Navbar",
             menuOpen: false,
             urlAvatar: "",
+            isAdmin: false,
         };
     },
 
@@ -58,13 +63,23 @@ export default {
         let user = localStorage.getItem("user");
         user = JSON.parse(user);
         const token = user.token;
-        instance
-            .get("/profile/:" + user.userId, {
+        axios.all([
+            instance.get("/profile/:" + user.userId, {
+                headers: { Authorization: `Bearer ${token}` },
+            }),
+            instance.get("/admin/:" + user.userId, {
                 headers: { Authorization: `Bearer ${token}` },
             })
-            .then(function (response) {
-                self.urlAvatar = response.data.results[0].photo_url;
-            })
+        ])
+            .then(axios.spread((response1, response2) => {
+                self.urlAvatar = response1.data.results[0].photo_url;
+                if(response2.data.results[0].is_admin == 1){
+                    self.isAdmin = true;
+                }
+                else {
+                    self.isAdmin = false;
+                }
+            }))
             .catch(function (error) {
                 console.log(error);
             });
@@ -99,16 +114,21 @@ export default {
     justify-content: space-between;
     padding: $space-Xsmall;
     background-color: $color-white;
-    border-bottom: 1px solid $color-secondary;
+    border-bottom: 2px solid $color-secondary;
 
     &_logo {
         display: flex;
         align-items: center;
+        >a {
+            display: flex;
+
+            .logo-navbar {
+                width: 200px;
+            }
+        }
     }
 
-    .logo-navbar {
-        width: 200px;
-    }
+    
 
     &_profil {
         width: 50px;
@@ -137,17 +157,17 @@ export default {
     z-index: 10;
 
     &_list {
-        padding: 0 $space-large;
         display: flex;
         flex-direction: column;
         justify-content: center;
         text-align: center;
         gap: $space-XXsmall;
         width: 100%;
+        padding: 0 $space-large;
 
         &_line {
             border: none;
-            height: 1px;
+            height: 2px;
             background-color: $color-secondary;
         }
         &_btn:hover,

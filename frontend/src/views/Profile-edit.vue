@@ -1,6 +1,7 @@
 <template>
     <div class="profile-edit-page">
         <navbar></navbar>
+        <card-admin  @user-admin="admin"></card-admin>
         <card-profile-edit></card-profile-edit>
         <card-footer></card-footer>   
     </div>
@@ -10,10 +11,21 @@
 import CardProfileEdit from '../components/Card-profile-edit.vue';
 import Navbar from '../components/Navbar.vue';
 import CardFooter from '../components/Card-footer.vue'
+import CardAdmin from '../components/Card-admin.vue';
 
 export default {
   name: 'Profile',
-  components: { Navbar, CardProfileEdit, CardFooter }, 
+  components: { Navbar, CardAdmin, CardProfileEdit, CardFooter },
+    data : function () {
+        return {
+            isAdmin: false,
+        }
+    },
+    methods: {
+            admin: function () {
+                    this.isAdmin = true;
+                },
+    }
 }
 
 </script>

@@ -100,6 +100,7 @@ export default {
             birthDate: "",
             urlAvatar: "",
             image: "",
+            infoImg: "",
             formValidated: false,
             errorLastname: false,
             errorFirstname: false,
@@ -131,10 +132,10 @@ export default {
                 self.lastname = response.data.results[0].lastname;
                 self.firstname = response.data.results[0].firstname;
                 self.location = response.data.results[0].location;
-                self.birthDate = moment(
-                    response.data.results[0].birth_date
-                ).format("YYYY-MM-DD");
                 self.urlAvatar = response.data.results[0].photo_url;
+                if(response.data.results[0].birth_date != null) {
+                    self.birthDate = moment(response.data.results[0].birth_date).format("YYYY-MM-DD");
+                }
             })
             .catch(function (error) {
                 console.log(error);
@@ -151,7 +152,8 @@ export default {
         onFileChange(event) {
             var files = event.target.files || event.dataTransfer.files;
             if (!files.length) return;
-            this.urlAvatar = files[0];
+            this.urlAvatar = '';
+            this.infoImg = files[0];
             this.createImage(files[0]);
         },
 
@@ -168,14 +170,14 @@ export default {
         },
 
         editProfile: function () {
+
+            // récupération de l'id et du token dans le localstorage
             let user = localStorage.getItem("user");
             user = JSON.parse(user);
             const token = user.token;
-            console.log(token);
             const self = this;
 
-            console.log(this.urlAvatar);
-
+            // récupération des informations du profil
             const userProfile = {
                 lastname: this.lastname,
                 firstname: this.firstname,
@@ -183,66 +185,28 @@ export default {
                 birth_date: this.birthDate,
                 photo_url: this.urlAvatar,
             };
-            console.log(this.image);
-            console.log(this.urlAvatar);
+
+            // ces informartions sont stockés au format JSON dans une variable
+            const dataUser = JSON.stringify(userProfile);
+
+            // Utilisation de la méthode formData.append pour stocker les data sous forme de clé-value
+            const formData = new FormData();
+            formData.append( "userProfile", dataUser);
 
 
-            if(!this.image && !this.urlAvatar) {
-                axios.all([
-                        instance.put("/profile/:" + user.userId, userProfile, {
-                            headers: { Authorization: `Bearer ${token}` },
-                        }),
-                        instance.put("/profile/img/:" + user.userId, userProfile, {
-                            headers: { Authorization: `Bearer ${token}` },
-                        }),
-                    ])
-                    .then(axios.spread((data1, data2) => {
-                        console.log("data1", data1, "data2", data2);
-                        self.$router.push("/profile");
-                    }),
-                    function (error) {
-                        console.log(error);
-                    }
-                );
+            if (this.image) {
+                // On ajoute la nouvelle image à upload sous forme de clé-value à formData
+                formData.append("image", this.infoImg, this.infoImg.name);
             }
 
-            else if (!this.image) {
-                instance
-                    .put("/profile/:" + user.userId, userProfile, {
-                        headers: { Authorization: `Bearer ${token}` },
-                    })
-                    .then(function (response) {
-                        self.$router.push("/profile");
-                    })
-                    .catch(function (error) {
-                        console.log(error);
-                    });
-            } else {
-                const formData = new FormData();
-                formData.append("image", this.urlAvatar, this.urlAvatar.name);
-                const imgUrl = formData;
-
-                axios.all([
-                        instance.put("/profile/:" + user.userId, userProfile, {
-                            headers: { Authorization: `Bearer ${token}` },
-                        }),
-                        instance.put("/profile/:" + user.userId, imgUrl, {
-                            headers: {
-                                Authorization: `Bearer ${token}`,
-                                "Content-Type": "multipart/form-data",
-                            },
-                        }),
-                    ])
-                    .then(axios.spread((data1, data2) => {
-                        console.log("data1", data1, "data2", data2);
-                        self.$router.push("/profile");
-                    }),
-                    function (error) {
-                        console.log(error);
-                    }
-                );
-            }
+            instance.put("/profile/:" + user.userId, formData, {headers: { 'Authorization': `Bearer ${token}`},
+                }).then(function (response) {
+                    self.$router.push("/profile");
+                }).catch(function (error) {
+                    console.log(error);
+                });
         },
+
 
         checkFormIsValid: function () {
             if (this.checkFormLastname() && this.checkFormFirstname()) {

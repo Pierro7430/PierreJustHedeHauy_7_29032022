@@ -14,31 +14,31 @@
     <div class="card-login_main">
       <h1 class="card-login_main_h1" v-if="mode == 'login'">Connexion</h1>
       <h1 class="card-login_main_h1" v-else>Inscription</h1>
-      <div class="card-login_main_form">
+      <form class="card-login_main_form">
         <div class="form-row">
           <p>Adresse mail</p>
-          <input @blur="checkFormMail() && checkFormIsValid()"  @focus="errorEmail = false" v-model="email" class="form-row_input" :class="{'form-row_input--error' : errorEmail} " type="text"/>
+          <input @blur="checkFormMail() && checkFormIsValid()"  @focus="errorEmail = false" v-model="email" class="form-row_input" :class="{'form-row_input--error' : errorEmail} " type="text" autocomplete ="email" />
           <p v-if="errorEmail" class="form-row_error">{{errors.emailIsNotValid}} {{errors.emailDoesntExist}} {{errors.emailExistAlready}}</p>
         </div>
 
         <div class="form-row" v-if="mode == 'create'">
           <p>Nom</p>
-          <input @blur="checkFormLastname() && checkFormIsValid()" @focus="errorLastname = false" v-model="lastname" class="form-row_input" :class="{'form-row_input--error' : errorLastname}" type="text"/>
+          <input @blur="checkFormLastname() && checkFormIsValid()" @focus="errorLastname = false" v-model="lastname" class="form-row_input" :class="{'form-row_input--error' : errorLastname}" type="text" autocomplete ="family-name"/>
           <p  v-if="errorLastname" class="form-row_error">{{errors.lastnameIsNotValid }}</p>        
         </div>
 
         <div class="form-row" v-if="mode == 'create'">
           <p>Prénom</p>
-          <input @blur="checkFormFirstname() && checkFormIsValid()" @focus="errorFirstname = false" v-model="firstname" class="form-row_input" :class="{'form-row_input--error' : errorFirstname}" type="text"/>
+          <input @blur="checkFormFirstname() && checkFormIsValid()" @focus="errorFirstname = false" v-model="firstname" class="form-row_input" :class="{'form-row_input--error' : errorFirstname}" type="text" autocomplete ="given-name"/>
           <p  v-if="errorFirstname" class="form-row_error">{{errors.firstnameIsNotValid }}</p>
         </div>
 
         <div class="form-row">
           <p>Mot de passe</p>
-          <input @blur="checkFormPassword() && checkFormIsValid()" @focus="errorPassword = false" v-model="password" class="form-row_input" :class="{'form-row_input--error' : errorPassword}" type="password"/>
+          <input @blur="checkFormPassword() && checkFormIsValid()" @focus="errorPassword = false" v-model="password" class="form-row_input" :class="{'form-row_input--error' : errorPassword}" type="password" autocomplete ="current-password"/>
           <p  v-if="errorPassword" class="form-row_error">{{errors.passwordIsNotValid }} {{errors.passwordDoesntMatch }}</p>
         </div>
-      </div>
+      </form>
 
       <div class="card-login_main_btn" v-if="mode == 'login'">
         <button :disabled="!formValidated" @click="login()" class="btn-login" :class="{'btn-login--disabled' : !formValidated}">Se connecter</button>
@@ -97,7 +97,7 @@ export default {
 
   mounted: function () {
     if (this.$store.state.user.userId != -1) {
-      this.$router.push('/profile');
+      this.$router.push('/');
       return ;
     }
   },
@@ -243,7 +243,7 @@ export default {
         email: this.email,
         password: this.password,
       }).then(function () {
-        self.$router.push('/profile');
+        self.$router.push('/home');
       }, function (error) { 
 				if(error.response.status == 404) {
 					self.errorEmail = true;

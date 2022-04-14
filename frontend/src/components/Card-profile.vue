@@ -47,7 +47,6 @@ export default {
     name: 'Card-profile',
     data: function () {
         return {
-            
             lastname : '',
             firstname : '',
             signupDate :'',
@@ -82,19 +81,21 @@ export default {
         this.$router.push('/');
         return ;
         }       
- 
         const self = this;
         let user = localStorage.getItem('user');
         user = JSON.parse(user);
         const token = user.token;
+        
         instance.get('/profile/:' + user.userId, { headers: {"Authorization" : `Bearer ${token}`} })
             .then(function (response) {
+                console.log(response);
                 self.lastname = response.data.results[0].lastname;
                 self.firstname = response.data.results[0].firstname;
                 self.signupDate = moment(response.data.results[0].signup_date).format("DD-MM-YYYY");
                 self.location = response.data.results[0].location;
                 self.birthDate = response.data.results[0].birth_date;
                 self.urlAvatar = response.data.results[0].photo_url;
+                self.isAdmin = response.data.results[0].is_admin;
             })
             .catch(function (error) {
                 console.log(error)
@@ -244,9 +245,7 @@ export default {
                 font-size: $font-large;
 
             }
-            > p {
-                    
-            }
+            
 
         }
 
